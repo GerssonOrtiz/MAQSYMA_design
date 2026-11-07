@@ -111,6 +111,7 @@ body {
   .hero-viewport {
     position: relative !important;
     height: 100vh !important;
+    height: 100svh !important;
   }
   #sparksCanvas {
     display: none !important;
@@ -315,6 +316,7 @@ body {
   left: 0;
   width: 100%;
   height: 100vh;
+  height: 100svh;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -338,13 +340,27 @@ body {
   opacity: 0.6;
 }
 
-#sparksCanvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 4;
-  pointer-events: none;
+/* Modos de capacidad atmosférica de hardware */
+html[data-device-tier="bajo"] #sparksCanvas,
+html.tier-bajo #sparksCanvas {
+  display: none !important;
+}
+
+html[data-device-tier="bajo"] .volumetric-arc-light,
+html.tier-bajo .volumetric-arc-light {
+  filter: none !important;
+  opacity: 0.65 !important;
+  background: radial-gradient(circle, rgba(112, 214, 255, 0.45) 0%, rgba(245, 196, 0, 0.25) 40%, transparent 75%) !important;
+}
+
+html[data-device-tier="medio"] #sparksCanvas,
+html.tier-medio #sparksCanvas {
+  filter: none !important;
+}
+
+html[data-device-tier="medio"] .volumetric-arc-light,
+html.tier-medio .volumetric-arc-light {
+  filter: blur(20px) !important;
 }
 
 .volumetric-arc-light {
@@ -374,13 +390,22 @@ body {
   pointer-events: none;
 }
 
+.hero-welder-backdrop picture,
 .hero-welder-backdrop img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   filter: brightness(0.7) contrast(1.2);
   mix-blend-mode: screen;
   opacity: 0.45;
+}
+
+@media (max-width: 768px) {
+  .hero-welder-backdrop picture,
+  .hero-welder-backdrop img {
+    object-position: 65% center;
+  }
 }
 
 .hero-product-stage {

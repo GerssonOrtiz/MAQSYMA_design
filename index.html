@@ -83,9 +83,13 @@
         <!-- Volumetric Arc Flare -->
         <div class="volumetric-arc-light" aria-hidden="true"></div>
 
-        <!-- Real Welder Action Silhouette (Extracted from Original Reference Poster) -->
+        <!-- Real Welder Action Silhouette (Extracted from Original Reference Poster) with Responsive <picture> -->
         <div class="hero-welder-backdrop" aria-hidden="true">
-          <img src="assets/cinematic/welder-cinematic.png" alt="Arco de soldadura en taller industrial">
+          <picture>
+            <source media="(max-width: 768px)" srcset="assets/cinematic/welder-cinematic-mobile.webp" type="image/webp">
+            <source srcset="assets/cinematic/welder-cinematic.webp" type="image/webp">
+            <img src="assets/cinematic/welder-cinematic.png" alt="Arco de soldadura en taller industrial" width="991" height="658" fetchpriority="high">
+          </picture>
         </div>
 
         <!-- Realtime Physics Sparks Canvas -->

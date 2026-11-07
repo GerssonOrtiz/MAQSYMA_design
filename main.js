@@ -28,13 +28,85 @@
     gsap.registerPlugin(ScrollTrigger);
   }
 
-  let prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // =========================================================================
+  // 1. Módulo de Detección de Capacidad de Dispositivo (Tiers: alto, medio, bajo)
+  // =========================================================================
+  let deviceTier = 'alto'; // 'alto' | 'medio' | 'bajo'
   const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+  function evaluateDeviceCapability() {
+    let score = 100;
+
+    // A. Ancho y pointer
+    const isTouchOnly = window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(pointer: fine)').matches;
+    if (isTouchOnly || isMobileDevice) score -= 35;
+    if (window.innerWidth < 768) score -= 15;
+
+    // B. Concurrencia de hardware (núcleos de CPU)
+    const cores = navigator.hardwareConcurrency || 4;
+    if (cores <= 2) score -= 35;
+    else if (cores <= 4) score -= 15;
+
+    // C. Memoria de dispositivo (RAM en GB)
+    const memory = navigator.deviceMemory || 4;
+    if (memory <= 2) score -= 40;
+    else if (memory <= 4) score -= 20;
+
+    // D. Reduced motion fuerza inmediatamente nivel bajo
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      score = 0;
+    }
+
+    if (score >= 70) deviceTier = 'alto';
+    else if (score >= 40) deviceTier = 'medio';
+    else deviceTier = 'bajo';
+
+    applyDeviceTier(deviceTier);
+    sampleFPSAndCalibrate();
+  }
+
+  function applyDeviceTier(tier) {
+    deviceTier = tier;
+    document.documentElement.setAttribute('data-device-tier', tier);
+    document.documentElement.classList.remove('tier-alto', 'tier-medio', 'tier-bajo');
+    document.documentElement.classList.add(`tier-${tier}`);
+  }
+
+  // Muestreo dinámico de FPS en 1.5s para recalibrar a tier medio o bajo si hay frame drops
+  function sampleFPSAndCalibrate() {
+    if (deviceTier === 'bajo') return;
+    let frames = 0;
+    const startTime = performance.now();
+
+    function checkFrame(now) {
+      frames++;
+      const elapsed = now - startTime;
+      if (elapsed < 1400) {
+        requestAnimationFrame(checkFrame);
+      } else {
+        const fps = Math.round((frames * 1000) / elapsed);
+        if (fps < 32 && deviceTier !== 'bajo') {
+          console.warn(`[MAQSYMA Perf] FPS observado: ${fps}. Degradando dinámicamente atmósfera a nivel bajo.`);
+          applyDeviceTier('bajo');
+          if (canvas) canvas.style.display = 'none';
+        } else if (fps < 48 && deviceTier === 'alto') {
+          console.info(`[MAQSYMA Perf] FPS observado: ${fps}. Ajustando atmósfera a nivel medio.`);
+          applyDeviceTier('medio');
+        }
+      }
+    }
+    requestAnimationFrame(checkFrame);
+  }
+
+  evaluateDeviceCapability();
+
+  let prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Escuchar cambios dinámicos en prefers-reduced-motion
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
     prefersReducedMotion = e.matches;
     if (prefersReducedMotion) {
+      applyDeviceTier('bajo');
       if (heroTimeline) heroTimeline.pause(0);
       if (sparksRafId) {
         cancelAnimationFrame(sparksRafId);
@@ -42,38 +114,73 @@
       }
       if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
     } else {
-      if (!sparksRafId) loopSparks();
+      evaluateDeviceCapability();
+      if (!sparksRafId && deviceTier !== 'bajo') loopSparks();
     }
   });
 
-  // 2. High-Performance Mobile-Optimized Sparks Canvas
+  // =========================================================================
+  // 2. Sprites Precalculados para Chispas (Cero gradientes ni shadowBlur en loop)
+  // =========================================================================
+  const sparkSpriteCanvas = document.createElement('canvas');
+  const sparkSpriteCtx = sparkSpriteCanvas.getContext('2d');
+  sparkSpriteCanvas.width = 48;
+  sparkSpriteCanvas.height = 16;
+
+  // Dibujar 3 sprites de 16x16: Amarillo ESAB, Blanco Arco, Celeste Ionizado
+  function initSparkSprites() {
+    if (!sparkSpriteCtx) return;
+    const colors = ['#F5C400', '#FFFFFF', '#70D6FF'];
+    colors.forEach((col, idx) => {
+      const cx = idx * 16 + 8;
+      const cy = 8;
+      sparkSpriteCtx.fillStyle = col;
+      sparkSpriteCtx.beginPath();
+      sparkSpriteCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+      sparkSpriteCtx.fill();
+    });
+  }
+  initSparkSprites();
+
+  // 3. High-Performance Sparks Canvas
   const canvas = document.getElementById('sparksCanvas');
-  const ctx = canvas ? canvas.getContext('2d') : null;
+  const ctx = canvas ? canvas.getContext('2d', { alpha: true }) : null;
   let sparks = [];
   let sparksIntensity = 0;
   let sparksRafId = null;
   let isHeroVisible = true;
   let isPageVisible = !document.hidden;
 
-  // Límite de devicePixelRatio para prevenir calentamiento y consumo en móvil
-  const maxDPR = isMobileDevice ? 1.5 : Math.min(window.devicePixelRatio || 1, 2);
-  const maxSparksCount = isMobileDevice ? 65 : 200;
+  // Límite de devicePixelRatio según tier
+  function getMaxDPR() {
+    if (deviceTier === 'bajo') return 1;
+    if (deviceTier === 'medio' || isMobileDevice) return 1;
+    return Math.min(window.devicePixelRatio || 1, 1.75);
+  }
+
+  function getMaxSparks() {
+    if (deviceTier === 'bajo') return 0;
+    if (deviceTier === 'medio') return 45; // 25-35% de partículas
+    return 180;
+  }
 
   function resizeCanvas() {
-    if (!canvas) return;
+    if (!canvas || deviceTier === 'bajo') return;
+    const dpr = getMaxDPR();
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width = Math.floor(w * maxDPR);
-    canvas.height = Math.floor(h * maxDPR);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
-    if (ctx) ctx.setTransform(maxDPR, 0, 0, maxDPR, 0, 0);
+    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   let resizeTimeout = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
+      evaluateDeviceCapability();
       resizeCanvas();
       if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
     }, 200);
@@ -90,18 +197,19 @@
       this.x = x || w / 2;
       this.y = y || h * 0.52;
       const angle = (Math.random() * Math.PI * 2);
-      const speed = burst ? (Math.random() * 12 + 3) : (Math.random() * 6 + 2);
+      const speed = burst ? (Math.random() * 11 + 3) : (Math.random() * 6 + 2);
       this.vx = Math.cos(angle) * speed;
       this.vy = Math.sin(angle) * speed - (Math.random() * 3 + 1);
       this.gravity = 0.28;
       this.drag = 0.95;
       this.life = 0;
-      this.maxLife = Math.random() * 30 + 18;
-      this.size = Math.random() * 2.4 + 1.0;
+      this.maxLife = Math.random() * 28 + 16;
+      this.size = Math.random() * 2.2 + 0.8;
+
       const r = Math.random();
-      if (r < 0.6) this.color = '#F5C400';
-      else if (r < 0.85) this.color = '#FFFFFF';
-      else this.color = '#70D6FF';
+      if (r < 0.6) this.spriteIndex = 0; // Amarillo
+      else if (r < 0.85) this.spriteIndex = 1; // Blanco
+      else this.spriteIndex = 2; // Celeste
     }
     update() {
       this.vx *= this.drag;
@@ -113,23 +221,21 @@
     draw(context) {
       const remaining = 1 - (this.life / this.maxLife);
       if (remaining <= 0) return;
-      context.save();
       context.globalAlpha = remaining;
-      context.fillStyle = this.color;
-      // Solo aplicar shadowBlur si no es dispositivo móvil (optimización de GPU móvil)
-      if (!isMobileDevice) {
-        context.shadowColor = this.color;
-        context.shadowBlur = 8;
-      }
-      context.beginPath();
-      context.arc(this.x, this.y, this.size * remaining, 0, Math.PI * 2);
-      context.fill();
-      context.restore();
+
+      // Dibujo optimizado por sprite precalculado (sin shadowBlur ni recalculación de gradientes)
+      const sx = this.spriteIndex * 16;
+      const dSize = this.size * remaining * 2.4;
+      context.drawImage(
+        sparkSpriteCanvas,
+        sx, 0, 16, 16,
+        this.x - dSize / 2, this.y - dSize / 2, dSize, dSize
+      );
     }
   }
 
   function loopSparks() {
-    if (!ctx || !canvas || prefersReducedMotion || !isHeroVisible || !isPageVisible) {
+    if (!ctx || !canvas || deviceTier === 'bajo' || prefersReducedMotion || !isHeroVisible || !isPageVisible) {
       sparksRafId = null;
       return;
     }
@@ -137,10 +243,11 @@
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
     if (sparksIntensity > 0.05) {
-      const factor = isMobileDevice ? 2.5 : 5.0;
+      const factor = deviceTier === 'medio' ? 1.8 : 4.5;
       const count = Math.floor(sparksIntensity * factor);
+      const maxSparks = getMaxSparks();
       for (let i = 0; i < count; i++) {
-        if (sparks.length < maxSparksCount) sparks.push(new Spark());
+        if (sparks.length < maxSparks) sparks.push(new Spark());
       }
     }
 
@@ -154,21 +261,21 @@
     sparksRafId = requestAnimationFrame(loopSparks);
   }
 
-  // Pausar y reanudar eficientemente al cambiar pestaña
+  // Pausar y reanudar al cambiar pestaña
   document.addEventListener('visibilitychange', () => {
     isPageVisible = !document.hidden;
-    if (isPageVisible && isHeroVisible && !sparksRafId && !prefersReducedMotion) {
+    if (isPageVisible && isHeroVisible && !sparksRafId && deviceTier !== 'bajo' && !prefersReducedMotion) {
       loopSparks();
     }
   });
 
-  // Pausar partículas mediante IntersectionObserver cuando la sección Hero sale de pantalla
+  // Pausar partículas mediante IntersectionObserver cuando el Hero sale de pantalla
   const heroSection = document.querySelector('.hero-scroll-container');
   if (heroSection && 'IntersectionObserver' in window) {
     const heroObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         isHeroVisible = entry.isIntersecting;
-        if (isHeroVisible && isPageVisible && !sparksRafId && !prefersReducedMotion) {
+        if (isHeroVisible && isPageVisible && !sparksRafId && deviceTier !== 'bajo' && !prefersReducedMotion) {
           loopSparks();
         }
       });
@@ -176,7 +283,7 @@
     heroObserver.observe(heroSection);
   }
 
-  if (!prefersReducedMotion) loopSparks();
+  if (!prefersReducedMotion && deviceTier !== 'bajo') loopSparks();
 
   // 3. Hero 500vh GSAP Scroll Sequence
   let heroTimeline = null;
@@ -207,12 +314,16 @@
     gsap.set(welderBg, { opacity: 0 });
     gsap.set(hotspots, { opacity: 0 });
 
+    const isMobileOrTierBajo = isMobileDevice || deviceTier !== 'alto';
+    const scrubVal = isMobileOrTierBajo ? 0.35 : 0.8;
+    const durScale = isMobileOrTierBajo ? 0.75 : 1.0; // 0.6-0.8s en transiciones móviles
+
     heroTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: heroContainer,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: isMobileDevice ? 0.3 : 0.8,
+        scrub: scrubVal,
         onUpdate: (self) => {
           const p = self.progress;
           if (telemetryFill) telemetryFill.style.width = `${(p * 100).toFixed(1)}%`;
@@ -229,36 +340,36 @@
     heroTimeline
       // Phase 1: Ignition
       .to({ intensity: 0 }, {
-        intensity: 1.0, duration: 0.15,
+        intensity: 1.0, duration: 0.15 * durScale,
         onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0)
-      .to(arcLight, { opacity: 0.95, scale: 1.3, duration: 0.15 }, 0)
-      .to(welderBg, { opacity: 0.55, duration: 0.18 }, 0.02)
-      .to(slide1, { opacity: 1, y: 0, duration: 0.12 }, 0.04)
-      .to(slide1, { opacity: 0, y: -35, duration: 0.08 }, 0.20)
+      .to(arcLight, { opacity: 0.95, scale: 1.3, duration: 0.15 * durScale }, 0)
+      .to(welderBg, { opacity: 0.55, duration: 0.18 * durScale }, 0.02)
+      .to(slide1, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.04)
+      .to(slide1, { opacity: 0, y: -35, duration: 0.08 * durScale }, 0.20)
       // Phase 2: Machine reveal
-      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, duration: 0.25 }, 0.22)
-      .to(arcLight, { opacity: 0.45, scale: 1.0, duration: 0.2 }, 0.22)
+      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, duration: 0.22 * durScale }, 0.22)
+      .to(arcLight, { opacity: 0.45, scale: 1.0, duration: 0.18 * durScale }, 0.22)
       .to({ intensity: 1.0 }, {
-        intensity: 0.35, duration: 0.2,
+        intensity: 0.35, duration: 0.18 * durScale,
         onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0.22)
-      .to(slide2, { opacity: 1, y: 0, duration: 0.14 }, 0.26)
-      .to(slide2, { opacity: 0, y: -35, duration: 0.08 }, 0.48)
+      .to(slide2, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.26)
+      .to(slide2, { opacity: 0, y: -35, duration: 0.08 * durScale }, 0.48)
       // Phase 3: Zoom and details
-      .to(machine, { scale: 1.35, x: isMobileDevice ? '-3%' : '-8%', y: '5%', duration: 0.24 }, 0.50)
-      .to(hotspots, { opacity: 1, duration: 0.12 }, 0.52)
-      .to(slide3, { opacity: 1, y: 0, duration: 0.14 }, 0.53)
-      .to(hotspots, { opacity: 0, duration: 0.08 }, 0.72)
-      .to(slide3, { opacity: 0, y: -35, duration: 0.08 }, 0.74)
+      .to(machine, { scale: 1.35, x: isMobileDevice ? '-2%' : '-8%', y: '5%', duration: 0.22 * durScale }, 0.50)
+      .to(hotspots, { opacity: 1, duration: 0.10 * durScale }, 0.52)
+      .to(slide3, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.53)
+      .to(hotspots, { opacity: 0, duration: 0.08 * durScale }, 0.72)
+      .to(slide3, { opacity: 0, y: -35, duration: 0.08 * durScale }, 0.74)
       // Phase 4: MAQSYMA Authority
-      .to(machine, { scale: 0.95, x: '0%', y: '0%', opacity: 0.85, duration: 0.20 }, 0.76)
-      .to(welderBg, { opacity: 0.15, duration: 0.18 }, 0.76)
+      .to(machine, { scale: 0.95, x: '0%', y: '0%', opacity: 0.85, duration: 0.18 * durScale }, 0.76)
+      .to(welderBg, { opacity: 0.15, duration: 0.16 * durScale }, 0.76)
       .to({ intensity: 0.35 }, {
-        intensity: 0.0, duration: 0.20,
+        intensity: 0.0, duration: 0.18 * durScale,
         onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0.76)
-      .to(slide4, { opacity: 1, y: 0, duration: 0.16 }, 0.80);
+      .to(slide4, { opacity: 1, y: 0, duration: 0.14 * durScale }, 0.80);
   }
 
   // 4. Products & Inventory Engine
