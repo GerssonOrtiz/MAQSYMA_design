@@ -9,32 +9,36 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'No autorizado. Se requiere sesión activa de administrador.' });
   }
 
+  const { method, body } = req;
+
+  // 2. Validaciones de payload antes de llamadas externas
+  if (method === 'PUT') {
+    const { id, stock, priceUSD, pricePEN } = body || {};
+
+    if (!id) {
+      return res.status(400).json({ error: 'ID de producto requerido' });
+    }
+
+    if (stock !== undefined && (!Number.isInteger(Number(stock)) || Number(stock) < 0)) {
+      return res.status(400).json({ error: 'El stock debe ser un número entero no negativo' });
+    }
+    if (priceUSD !== undefined && (isNaN(Number(priceUSD)) || Number(priceUSD) < 0)) {
+      return res.status(400).json({ error: 'El precio USD debe ser un número mayor o igual a 0' });
+    }
+    if (pricePEN !== undefined && (isNaN(Number(pricePEN)) || Number(pricePEN) < 0)) {
+      return res.status(400).json({ error: 'El precio PEN debe ser un número mayor o igual a 0' });
+    }
+  }
+
   const supabase = getSupabase();
   if (!supabase) {
     return res.status(500).json({ error: 'Base de datos Supabase no configurada' });
   }
 
-  const { method, body } = req;
-
   try {
-    // 2. Modificar producto existente (Stock, Precios, etc.)
+    // Modificar producto existente (Stock, Precios, etc.)
     if (method === 'PUT') {
       const { id, stock, priceUSD, pricePEN } = body || {};
-
-      if (!id) {
-        return res.status(400).json({ error: 'ID de producto requerido' });
-      }
-
-      // Validaciones robustas
-      if (stock !== undefined && (!Number.isInteger(Number(stock)) || Number(stock) < 0)) {
-        return res.status(400).json({ error: 'El stock debe ser un número entero no negativo' });
-      }
-      if (priceUSD !== undefined && (isNaN(Number(priceUSD)) || Number(priceUSD) < 0)) {
-        return res.status(400).json({ error: 'El precio USD debe ser un número mayor o igual a 0' });
-      }
-      if (pricePEN !== undefined && (isNaN(Number(pricePEN)) || Number(pricePEN) < 0)) {
-        return res.status(400).json({ error: 'El precio PEN debe ser un número mayor o igual a 0' });
-      }
 
       // Obtener valores anteriores para auditoría
       const { data: currentProd } = await supabase

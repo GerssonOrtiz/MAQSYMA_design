@@ -1,14 +1,26 @@
 // api/_auth.js
 const jwt = require('jsonwebtoken');
-const cookie = require('cookie');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_maqsyma_replace_in_prod';
 const COOKIE_NAME = 'maqsyma_admin_token';
 
+function parseCookies(cookieHeader = '') {
+  const list = {};
+  if (!cookieHeader) return list;
+  cookieHeader.split(';').forEach(cookie => {
+    let [name, ...rest] = cookie.split('=');
+    name = name?.trim();
+    if (!name) return;
+    const value = rest.join('=').trim();
+    list[name] = decodeURIComponent(value);
+  });
+  return list;
+}
+
 function verifyAdminSession(req) {
   try {
-    const rawCookies = req.headers.cookie || '';
-    const parsed = cookie.parse(rawCookies);
+    const rawCookies = req.headers?.cookie || '';
+    const parsed = parseCookies(rawCookies);
     const token = parsed[COOKIE_NAME];
 
     if (!token) return null;
@@ -33,18 +45,16 @@ function createSessionToken(user) {
 }
 
 function buildSessionCookie(token, isLogout = false) {
-  return cookie.serialize(COOKIE_NAME, isLogout ? '' : token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: isLogout ? 0 : 8 * 60 * 60 // 8 horas
-  });
+  const maxAge = isLogout ? 0 : 8 * 60 * 60; // 8 horas
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  const val = isLogout ? '' : (token || '');
+  return `${COOKIE_NAME}=${encodeURIComponent(val)}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${secure}`;
 }
 
 module.exports = {
   verifyAdminSession,
   createSessionToken,
   buildSessionCookie,
+  parseCookies,
   COOKIE_NAME
 };
