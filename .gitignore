@@ -16,6 +16,10 @@ package-lock.json
 .claude/
 skills-lock.json
 
+# Documentación interna y archivos markdown en raíz
+vault/
+/*.md
+
 # Sistema y logs
 .DS_Store
 Thumbs.db
