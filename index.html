@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAQSYMA | Inversoras de Soldadura ESAB | Potencia y Precisión Industrial</title>
+  <meta name="description" content="MAQSYMA es distribuidor especializado en máquinas inversoras de soldadura ESAB. Rogue, Rebel y Warrior: tecnología sueca de micro-control inverter PFC, arco estable y máxima eficiencia para la industria metalmecánica.">
+  <meta name="keywords" content="MAQSYMA, ESAB, soldadoras inversoras, Rogue ES 180i, Rebel EMP 215ic, soldadura TIG, MIG MAG, electrodo revestido, soldadura industrial México">
+
+  <!-- Open Graph / Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MAQSYMA | Máquinas Inversoras de Soldadura ESAB">
+  <meta property="og:description" content="Experimenta el poder del arco eléctrico ESAB. Equipos de soldadura con rendimiento ininterrumpido y asesoría técnica especializada con MAQSYMA.">
+  <meta property="og:image" content="assets/branding/maqsyma-logo.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/branding/maqsyma-logo.png">
+
+  <!-- Typography: Syne (Display Industrial) + Plus Jakarta Sans + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Grain Texture Overlay -->
+  <div class="film-grain" aria-hidden="true"></div>
+
+  <!-- Accessibility Skip Link -->
+  <a href="#catalogo" class="skip-to-content">Saltar al catálogo de productos</a>
+
+  <!-- Floating Navigation Bar -->
+  <header class="site-header" role="banner">
+    <nav class="nav-container" aria-label="Navegación principal">
+      <a href="#" class="nav-brand" aria-label="MAQSYMA Inicio">
+        <img src="assets/branding/maqsyma-logo.png" alt="MAQSYMA Logo" width="160" height="32">
+        <span class="brand-badge">
+          <span class="indicator"></span>
+          ESAB PARTNER
+        </span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#experiencia" class="nav-link">Tecnología</a></li>
+        <li><a href="#catalogo" class="nav-link">Inversoras ESAB</a></li>
+        <li><a href="#ingenieria" class="nav-link">Ventajas PFC</a></li>
+        <li><a href="#cotizaciones" class="nav-link">Asesoría Técnica</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="#cotizaciones" class="btn-header-cta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Cotizar WhatsApp
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ====================================================================
+         HERO: 500VH CINEMATIC SCRUBBED SEQUENCE
+         Controlled via GSAP ScrollTrigger (No Scroll Locking)
+         ==================================================================== -->
+    <section class="hero-scroll-container" id="experiencia" aria-label="Secuencia Cinematográfica de Soldadura ESAB">
+      <div class="hero-viewport">
+
+        <!-- Background Scene Elements -->
+        <div class="hero-backdrop-scene" aria-hidden="true">
+          <div class="hero-grid-mesh"></div>
+        </div>
+
+        <!-- Volumetric Arc Flare -->
+        <div class="volumetric-arc-light" aria-hidden="true"></div>
+
+        <!-- Real Welder Action Silhouette (Extracted from Original Reference Poster) -->
+        <div class="hero-welder-backdrop" aria-hidden="true">
+          <img src="assets/cinematic/welder-cinematic.png" alt="Arco de soldadura en taller industrial">
+        </div>
+
+        <!-- Realtime Physics Sparks Canvas -->
+        <canvas id="sparksCanvas" aria-hidden="true"></canvas>
+
+        <!-- Product Stage: Authentic ESAB Equipment Cutouts -->
+        <div class="hero-product-stage">
+          <div class="machine-hero-wrapper">
+            <img src="assets/products/esab_hero_clean.png" alt="Máquina de soldadura inversora ESAB Rebel / Rogue industrial de alta precisión" class="machine-hero-img">
+
+            <!-- Interactive HUD Hotspots -->
+            <div class="machine-hotspots" aria-hidden="true">
+              <div class="hotspot-tag hotspot-1">
+                <span>PFC POWER FACTOR</span>
+              </div>
+              <div class="hotspot-tag hotspot-2">
+                <span>sMIG INTELIGENTE</span>
+              </div>
+              <div class="hotspot-tag hotspot-3">
+                <span>CHASIS IP23S INDUSTRIAL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cinematic Narrative Overlays (Driven by Scroll Progress) -->
+        <div class="hero-narrative-overlay">
+
+          <!-- Slide 1: Ignition -->
+          <article class="narrative-slide active-events" id="slide-intro">
+            <span class="slide-badge">01 // IGNICIÓN DEL ARCO</span>
+            <h1 class="narrative-title">EL PODER DE LA <span class="highlight-yellow">SOLDADURA PURA</span></h1>
+            <p class="narrative-desc">Donde la energía se convierte en fusión perfecta. Control dinámico milimétrico del arco para los entornos de manufactura más exigentes.</p>
+            <div class="hero-cta-group">
+              <a href="#catalogo" class="btn-primary-esab">Explorar Equipos</a>
+              <a href="#cotizaciones" class="btn-secondary-metal">Asesoría Inmediata</a>
+            </div>
+          </article>
+
+          <!-- Slide 2: Inverter Reveal -->
+          <article class="narrative-slide" id="slide-machine">
+            <span class="slide-badge">02 // INGENIERÍA ESAB</span>
+            <h2 class="narrative-title">TECNOLOGÍA <span class="highlight-yellow">INVERTER ÉLITE</span></h2>
+            <p class="narrative-desc">Consistencia inquebrantable. Las máquinas inversoras ESAB ofrecen estabilidad extrema ante fluctuaciones de red y extensiones de hasta 100 metros.</p>
+          </article>
+
+          <!-- Slide 3: Technical Details -->
+          <article class="narrative-slide" id="slide-details">
+            <span class="slide-badge">03 // MICRO-CONTROL DIGITAL</span>
+            <h2 class="narrative-title">PRECISIÓN EN <span class="highlight-yellow">CADA CORDÓN</span></h2>
+            <p class="narrative-desc">Ciclos de trabajo industriales al 100%, sistema multiproceso MIG/MAG, TIG Lift y electrodo revestido con micro-ajuste digital de inductancia.</p>
+          </article>
+
+          <!-- Slide 4: MAQSYMA Authority -->
+          <article class="narrative-slide active-events" id="slide-brand">
+            <span class="slide-badge">04 // RESPALDO MAQSYMA</span>
+            <h2 class="narrative-title">MAQSYMA <span class="highlight-yellow">+ ESAB</span></h2>
+            <p class="narrative-desc">Tu aliado técnico en soldadura industrial. Garantía directa, consumibles originales y soporte especializado para plantas y talleres en México.</p>
+            <div class="hero-cta-group">
+              <a href="#catalogo" class="btn-primary-esab">Ver Catálogo Completo</a>
+              <a href="#cotizaciones" class="btn-secondary-metal">Cotizar por WhatsApp</a>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- Telemetry Progress Bar -->
+        <div class="scroll-telemetry" aria-hidden="true">
+          <span class="scroll-indicator-mouse">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="7"></rect>
+              <line x1="12" y1="6" x2="12" y2="10"></line>
+            </svg>
+            SCROLL SCENE
+          </span>
+          <div class="telemetry-bar-wrap">
+            <div class="telemetry-bar-fill"></div>
+          </div>
+          <span id="telemetry-step">01 / IGNICIÓN ARCO</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CREDENTIALS & BRAND METRICS
+         ==================================================================== -->
+    <section class="section-credentials" aria-label="Credenciales y Respaldo">
+      <div class="credentials-container">
+        <div class="credentials-intro">
+          <h3>ESAB EN MÉXICO CON MAQSYMA</h3>
+          <p>Innovación centenaria en unión de metales respaldada por la experiencia técnica y logística de MAQSYMA.</p>
+        </div>
+        <div class="credentials-grid">
+          <div class="credential-card">
+            <span class="cred-val">3 AÑOS</span>
+            <span class="cred-lbl">Garantía de Fábrica</span>
+          </div>
+          <div class="credential-card">
+            <span class="cred-val">IP23S</span>
+            <span class="cred-lbl">Protección Intemperie</span>
+          </div>
+          <div class="credential-card">
+            <span class="cred-val">100%</span>
+            <span class="cred-lbl">Equipos Originales</span>
+          </div>
+          <div class="credential-card">
+            <span class="cred-val">24/48H</span>
+            <span class="cred-lbl">Despacho Nacional</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         CATALOG SECTION: AUTHENTIC ESAB INVERTERS
+         Extracted faithfully from reference posters
+         ==================================================================== -->
+    <section class="section-catalog" id="catalogo" aria-labelledby="catalog-heading">
+      <div class="catalog-header">
+        <div>
+          <span class="section-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Catálogo Industrial Especializado
+          </span>
+          <h2 class="section-title" id="catalog-heading">MÁQUINAS INVERSORAS <span style="color: var(--color-yellow-esab);">ESAB</span></h2>
+          <p class="section-subtitle">Modelos profesionales y de alto tonelaje para soldadores de calificación estructural, calderería y mantenimiento crítico.</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="catalog-tabs" role="tablist" aria-label="Filtrar por tecnología de soldadura">
+          <button class="tab-btn active" role="tab" aria-selected="true" data-filter="all">Todos</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-filter="multiproceso">Multiproceso</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-filter="electrodo">Electrodo / TIG</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-filter="industrial">Alto Rendimiento</button>
+        </div>
+      </div>
+
+      <div class="products-grid">
+
+        <!-- Product 1: ESAB Rebel EMP 215ic -->
+        <article class="product-card" data-category="multiproceso">
+          <div class="card-top-badges">
+            <span class="badge-category">MIG / TIG / MMA</span>
+            <span class="badge-origin">TECNOLOGÍA sMIG</span>
+          </div>
+          <div class="product-image-container">
+            <img src="assets/products/esab_rebel_clean.png" alt="Inversora ESAB Rebel EMP 215ic Multiproceso" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">ESAB Rebel EMP 215ic</h3>
+            <p class="product-process-tag">Multiproceso Inteligente Monofásico 120V / 230V</p>
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">5 – 240 A</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Ciclo de Trabajo</span>
+                <span class="spec-val">130 A @ 60%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Voltaje Entrada</span>
+                <span class="spec-val">120V / 230V 1ph</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Peso Ultraligero</span>
+                <span class="spec-val">18.2 kg</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn-card-quote" data-model="ESAB Rebel EMP 215ic">
+                Cotizar WhatsApp
+              </button>
+              <a href="#cotizaciones" class="btn-card-spec" title="Ver ficha técnica">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 2: ESAB Rogue ES 180i PRO -->
+        <article class="product-card" data-category="electrodo">
+          <div class="card-top-badges">
+            <span class="badge-category">SMAW / TIG LIFT</span>
+            <span class="badge-origin">PFC INTEGRADO</span>
+          </div>
+          <div class="product-image-container">
+            <img src="assets/products/esab_rogue_clean.png" alt="Inversora ESAB Rogue ES 180i PRO" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">ESAB Rogue ES 180i PRO</h3>
+            <p class="product-process-tag">Inversor Portátil de Alto Rendimiento para Electrodo</p>
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">10 – 180 A</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Ciclo de Trabajo</span>
+                <span class="spec-val">180 A @ 25%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Electrodos</span>
+                <span class="spec-val">Hasta 4.0 mm (E7018)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Peso Chasis</span>
+                <span class="spec-val">8.4 kg</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn-card-quote" data-model="ESAB Rogue ES 180i PRO">
+                Cotizar WhatsApp
+              </button>
+              <a href="#cotizaciones" class="btn-card-spec" title="Ver ficha técnica">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 3: ESAB Warrior 400i / 500i CC/CV -->
+        <article class="product-card" data-category="industrial">
+          <div class="card-top-badges">
+            <span class="badge-category">HEAVY INDUSTRIAL</span>
+            <span class="badge-origin">3-PHASE HIGH DUTY</span>
+          </div>
+          <div class="product-image-container">
+            <img src="assets/products/esab_hero_clean.png" alt="Inversora ESAB Warrior 500i CC/CV para Trabajo Pesado" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">ESAB Warrior 500i CC/CV</h3>
+            <p class="product-process-tag">Inversor Industrial Multiproceso para Operación Continua</p>
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">16 – 500 A</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Ciclo de Trabajo</span>
+                <span class="spec-val">500 A @ 60%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Procesos</span>
+                <span class="spec-val">GMAW, FCAW, Gouging</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Enfriamiento</span>
+                <span class="spec-val">Túnel de Aire Aislado</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn-card-quote" data-model="ESAB Warrior 500i CC/CV">
+                Cotizar WhatsApp
+              </button>
+              <a href="#cotizaciones" class="btn-card-spec" title="Ver ficha técnica">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 4: ESAB HandyArc 162i -->
+        <article class="product-card" data-category="electrodo">
+          <div class="card-top-badges">
+            <span class="badge-category">COMPACT MMA</span>
+            <span class="badge-origin">TALLER & MANTENIMIENTO</span>
+          </div>
+          <div class="product-image-container">
+            <img src="assets/products/esab_handyarc_transparent.png" alt="Inversora ESAB HandyArc 162i Portátil" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">ESAB HandyArc 162i</h3>
+            <p class="product-process-tag">Inversor Ultra Compacto para Reparación Rápida</p>
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">20 – 160 A</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Voltaje</span>
+                <span class="spec-val">220V 1ph Automático</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Electrodo Max</span>
+                <span class="spec-val">3.25 mm continuo</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Peso Pluma</span>
+                <span class="spec-val">3.5 kg</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn-card-quote" data-model="ESAB HandyArc 162i">
+                Cotizar WhatsApp
+              </button>
+              <a href="#cotizaciones" class="btn-card-spec" title="Ver ficha técnica">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 5: ESAB Rustler EM 350C PRO -->
+        <article class="product-card" data-category="industrial">
+          <div class="card-top-badges">
+            <span class="badge-category">MIG COMPACT</span>
+            <span class="badge-origin">4-ROLL DRIVE SYSTEM</span>
+          </div>
+          <div class="product-image-container">
+            <img src="assets/products/esab_hero_clean.png" alt="Inversora MIG ESAB Rustler EM 350C" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">ESAB Rustler EM 350C PRO</h3>
+            <p class="product-process-tag">Inversor MIG/MAG Compacto con Alimentador de 4 Rodillos</p>
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">30 – 350 A</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Ciclo de Trabajo</span>
+                <span class="spec-val">350 A @ 40%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Alambre</span>
+                <span class="spec-val">0.8 – 1.2 mm sólido</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Tracción</span>
+                <span class="spec-val">Mecanismo Metálico 4R</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn-card-quote" data-model="ESAB Rustler EM 350C PRO">
+                Cotizar WhatsApp
+              </button>
+              <a href="#cotizaciones" class="btn-card-spec" title="Ver ficha técnica">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Product 6: ESAB Rebel EMP 205ic AC/DC -->
+        <article class="product-card" data-category="multiproceso">
+          <div class="card-top-badges">
+            <span class="badge-category">TIG AC/DC + MIG</span>
+            <span class="badge-origin">ALUMINIO ESPECIALIZADO</span>
+          </div>
+          <div class="product-image-container">
+            <img src="assets/products/esab_rebel_clean.png" alt="Inversora ESAB Rebel EMP 205ic AC/DC Soldadura de Aluminio" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title">ESAB Rebel EMP 205ic AC/DC</h3>
+            <p class="product-process-tag">El primer equipo portátil del mundo MIG + TIG AC/DC</p>
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">5 – 235 A</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Capacidad TIG</span>
+                <span class="spec-val">Alta Frecuencia + Pulso</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Materiales</span>
+                <span class="spec-val">Aluminio, Inox, Acero</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Pantalla</span>
+                <span class="spec-val">TFT Color 4.3" Gráfica</span>
+              </div>
+            </div>
+            <div class="product-footer-actions">
+              <button class="btn-card-quote" data-model="ESAB Rebel EMP 205ic AC/DC">
+                Cotizar WhatsApp
+              </button>
+              <a href="#cotizaciones" class="btn-card-spec" title="Ver ficha técnica">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         ENGINEERING & ADVANTAGES (ESAB INVERTER TECH)
+         ==================================================================== -->
+    <section class="section-engineering" id="ingenieria" aria-labelledby="tech-heading">
+      <div class="engineering-container">
+        <span class="section-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Ingeniería de Potencia
+        </span>
+        <h2 class="section-title" id="tech-heading">POR QUÉ EL INVERSOR ESAB <span style="color: var(--color-yellow-esab);">SUPERA A LA COMPETENCIA</span></h2>
+        <p class="section-subtitle">Arquitectura electrónica de estado sólido diseñada para responder al milisegundo y resistir las condiciones eléctricas más duras de obra.</p>
+
+        <div class="features-grid">
+          <div class="feature-box">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </div>
+            <h3 class="feature-title">Corrector de Factor de Potencia (PFC)</h3>
+            <p class="feature-desc">Mantiene el arco 100% estable incluso conectado a generadores desbalanceados o mediante extensiones de cable de hasta 100 metros sin pérdida de amperaje.</p>
+          </div>
+
+          <div class="feature-box">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <h3 class="feature-title">Chasis Robusto Grado Militar IP23S</h3>
+            <p class="feature-desc">Carcaseo perimetral antichoque probado para caídas y salpicaduras de agua lluvia. Los componentes electrónicos van sellados en túnel de enfriamiento aislado.</p>
+          </div>
+
+          <div class="feature-box">
+            <div class="feature-icon-wrapper">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <h3 class="feature-title">Algoritmo Inteligente sMIG</h3>
+            <p class="feature-desc">Aprende y se adapta continuamente a la técnica del operador para producir un arco de transferencia suave con mínimo chisporroteo y desbaste posterior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         WHATSAPP CONSULTANCY & LIVE TECHNICAL QUOTE GENERATOR
+         ==================================================================== -->
+    <section class="section-consultancy" id="cotizaciones" aria-labelledby="quote-heading">
+      <div class="consultancy-card-banner">
+        <div class="consultancy-content">
+          <span class="section-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            Atención Especializada Directa
+          </span>
+          <h2 id="quote-heading">HABLA CON UN INGENIERO DE SOLDADURA <span style="color: var(--color-yellow-esab);">EN TIEMPO REAL</span></h2>
+          <p>¿No estás seguro de qué modelo de máquina ESAB se adapta mejor a tu proceso, ciclo de trabajo o espesor de material? Te asesoramos sin costo con demostración en vivo.</p>
+
+          <ul class="consultancy-list">
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Cotización formal con factura y desglose fiscal para empresas</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Disponibilidad inmediata de stock, antorchas, consumibles y alambres</span>
+            </li>
+            <li>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Garantía oficial ESAB de 3 años y centro de servicio autorizado MAQSYMA</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- WhatsApp Interactive Generator -->
+        <div class="quote-box">
+          <div class="quote-box-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#25D366"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.698.077-2.008-.466-1.579-.652-2.589-2.261-2.667-2.366-.079-.104-.645-.858-.645-1.636 0-.777.408-1.161.553-1.32.145-.158.316-.198.421-.198.106 0 .211.002.303.006.097.004.227-.037.355.271.132.317.449 1.096.488 1.176.04.079.066.172.013.277-.053.106-.079.172-.158.264-.079.092-.167.205-.238.276-.079.079-.161.165-.069.324.092.158.408.673.875 1.089.601.536 1.107.702 1.265.781.158.079.251.066.343-.04.092-.106.396-.462.502-.62.106-.158.211-.132.356-.079.145.053.924.436 1.082.515.158.079.264.119.303.185.04.066.04.382-.104.787z"/></svg>
+            <span>Generar Cotización WhatsApp</span>
+          </div>
+
+          <form id="whatsappQuoteForm" onsubmit="return false;">
+            <div class="quote-form-group">
+              <label for="quote-model" class="quote-form-label">Modelo Inversor Requerido</label>
+              <select id="quote-model" class="quote-form-select">
+                <option value="ESAB Rebel EMP 215ic">ESAB Rebel EMP 215ic (Multiproceso)</option>
+                <option value="ESAB Rogue ES 180i PRO">ESAB Rogue ES 180i PRO (Electrodo/TIG)</option>
+                <option value="ESAB Warrior 500i CC/CV">ESAB Warrior 500i (Heavy Industrial)</option>
+                <option value="ESAB HandyArc 162i">ESAB HandyArc 162i (Compacto Taller)</option>
+                <option value="ESAB Rustler EM 350C PRO">ESAB Rustler EM 350C PRO (MIG Industrial)</option>
+                <option value="ESAB Rebel EMP 205ic AC/DC">ESAB Rebel EMP 205ic AC/DC (Aluminio/TIG)</option>
+                <option value="Asesoría General / No sé cuál elegir">No estoy seguro / Requiero recomendación técnica</option>
+              </select>
+            </div>
+
+            <div class="quote-form-group">
+              <label for="quote-usage" class="quote-form-label">Tipo de Aplicación / Espesores</label>
+              <input type="text" id="quote-usage" class="quote-form-input" placeholder="Ej. Estructuras de acero, tubería inoxidable, calderería...">
+            </div>
+
+            <div class="quote-form-group">
+              <label for="quote-city" class="quote-form-label">Ciudad / Estado (Para cálculo de flete)</label>
+              <input type="text" id="quote-city" class="quote-form-input" placeholder="Ej. CDMX, Monterrey, Guadalajara, Querétaro...">
+            </div>
+
+            <button type="button" id="btn-whatsapp-submit" class="btn-whatsapp-direct">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.698.077-2.008-.466-1.579-.652-2.589-2.261-2.667-2.366-.079-.104-.645-.858-.645-1.636 0-.777.408-1.161.553-1.32.145-.158.316-.198.421-.198.106 0 .211.002.303.006.097.004.227-.037.355.271.132.317.449 1.096.488 1.176.04.079.066.172.013.277-.053.106-.079.172-.158.264-.079.092-.167.205-.238.276-.079.079-.161.165-.069.324.092.158.408.673.875 1.089.601.536 1.107.702 1.265.781.158.079.251.066.343-.04.092-.106.396-.462.502-.62.106-.158.211-.132.356-.079.145.053.924.436 1.082.515.158.079.264.119.303.185.04.066.04.382-.104.787z"/></svg>
+              Iniciar Chat Técnico en WhatsApp
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       FOOTER: INDUSTRIAL SPECIFICATION & IDENTITY
+       ==================================================================== -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/branding/maqsyma-logo.png" alt="MAQSYMA Logo" width="180" height="36">
+        <p>Distribuidor e integrador de soluciones industriales en soldadura, corte y automatización. Especialistas en tecnología inversora ESAB para la industria de manufactura pesada.</p>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">Equipos Inversores</h4>
+        <ul class="footer-nav-list">
+          <li><a href="#catalogo">ESAB Rogue Series</a></li>
+          <li><a href="#catalogo">ESAB Rebel Multiproceso</a></li>
+          <li><a href="#catalogo">ESAB Warrior CC/CV</a></li>
+          <li><a href="#catalogo">ESAB Rustler MIG</a></li>
+          <li><a href="#catalogo">ESAB HandyArc</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">Servicio & Soporte</h4>
+        <ul class="footer-nav-list">
+          <li><a href="#cotizaciones">Asesoría de Selección</a></li>
+          <li><a href="#cotizaciones">Centro de Servicio Autorizado</a></li>
+          <li><a href="#cotizaciones">Garantías Oficiales ESAB</a></li>
+          <li><a href="#cotizaciones">Consumibles y Antorchas</a></li>
+          <li><a href="#cotizaciones">Demostraciones en Planta</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="footer-col-title">Contacto Directo</h4>
+        <ul class="footer-nav-list">
+          <li><a href="#cotizaciones">WhatsApp: +52 55 4000 1234</a></li>
+          <li><a href="mailto:ventas@maqsyma.com">ventas@maqsyma.com</a></li>
+          <li><a href="#cotizaciones">Horario: Lun - Vie 8:00 a 18:00</a></li>
+          <li><a href="#cotizaciones">Envíos a toda la República</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>&copy; 2026 MAQSYMA S.A. de C.V. Todos los derechos reservados. Distribuidor Autorizado de Tecnología ESAB.</div>
+      <div>Desarrollado bajo estándar Industrial Cinematic | Rendimiento de Grado Técnico</div>
+    </div>
+  </footer>
+
+  <!-- Scripts: GSAP + ScrollTrigger (Vendor standalone for reliability) + Engine -->
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/ScrollTrigger.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
