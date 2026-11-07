@@ -28,20 +28,56 @@
     gsap.registerPlugin(ScrollTrigger);
   }
 
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
-  // 2. High-Performance Sparks Canvas
+  // Escuchar cambios dinámicos en prefers-reduced-motion
+  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+    prefersReducedMotion = e.matches;
+    if (prefersReducedMotion) {
+      if (heroTimeline) heroTimeline.pause(0);
+      if (sparksRafId) {
+        cancelAnimationFrame(sparksRafId);
+        sparksRafId = null;
+      }
+      if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    } else {
+      if (!sparksRafId) loopSparks();
+    }
+  });
+
+  // 2. High-Performance Mobile-Optimized Sparks Canvas
   const canvas = document.getElementById('sparksCanvas');
   const ctx = canvas ? canvas.getContext('2d') : null;
   let sparks = [];
   let sparksIntensity = 0;
+  let sparksRafId = null;
+  let isHeroVisible = true;
+  let isPageVisible = !document.hidden;
+
+  // Límite de devicePixelRatio para prevenir calentamiento y consumo en móvil
+  const maxDPR = isMobileDevice ? 1.5 : Math.min(window.devicePixelRatio || 1, 2);
+  const maxSparksCount = isMobileDevice ? 65 : 200;
 
   function resizeCanvas() {
     if (!canvas) return;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    canvas.width = Math.floor(w * maxDPR);
+    canvas.height = Math.floor(h * maxDPR);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    if (ctx) ctx.setTransform(maxDPR, 0, 0, maxDPR, 0, 0);
   }
-  window.addEventListener('resize', resizeCanvas);
+
+  let resizeTimeout = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      resizeCanvas();
+      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+    }, 200);
+  }, { passive: true });
   resizeCanvas();
 
   class Spark {
@@ -49,17 +85,19 @@
       this.reset(x, y, burst);
     }
     reset(x, y, burst) {
-      this.x = x || canvas.width / 2;
-      this.y = y || canvas.height * 0.52;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      this.x = x || w / 2;
+      this.y = y || h * 0.52;
       const angle = (Math.random() * Math.PI * 2);
-      const speed = burst ? (Math.random() * 14 + 4) : (Math.random() * 8 + 2);
+      const speed = burst ? (Math.random() * 12 + 3) : (Math.random() * 6 + 2);
       this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - (Math.random() * 4 + 1);
+      this.vy = Math.sin(angle) * speed - (Math.random() * 3 + 1);
       this.gravity = 0.28;
-      this.drag = 0.96;
+      this.drag = 0.95;
       this.life = 0;
-      this.maxLife = Math.random() * 35 + 20;
-      this.size = Math.random() * 2.8 + 1.2;
+      this.maxLife = Math.random() * 30 + 18;
+      this.size = Math.random() * 2.4 + 1.0;
       const r = Math.random();
       if (r < 0.6) this.color = '#F5C400';
       else if (r < 0.85) this.color = '#FFFFFF';
@@ -78,8 +116,11 @@
       context.save();
       context.globalAlpha = remaining;
       context.fillStyle = this.color;
-      context.shadowColor = this.color;
-      context.shadowBlur = 10;
+      // Solo aplicar shadowBlur si no es dispositivo móvil (optimización de GPU móvil)
+      if (!isMobileDevice) {
+        context.shadowColor = this.color;
+        context.shadowBlur = 8;
+      }
       context.beginPath();
       context.arc(this.x, this.y, this.size * remaining, 0, Math.PI * 2);
       context.fill();
@@ -88,25 +129,57 @@
   }
 
   function loopSparks() {
-    if (!ctx || !canvas) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (sparksIntensity > 0.05 && !prefersReducedMotion) {
-      const count = Math.floor(sparksIntensity * 6);
+    if (!ctx || !canvas || prefersReducedMotion || !isHeroVisible || !isPageVisible) {
+      sparksRafId = null;
+      return;
+    }
+
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+    if (sparksIntensity > 0.05) {
+      const factor = isMobileDevice ? 2.5 : 5.0;
+      const count = Math.floor(sparksIntensity * factor);
       for (let i = 0; i < count; i++) {
-        if (sparks.length < 220) sparks.push(new Spark());
+        if (sparks.length < maxSparksCount) sparks.push(new Spark());
       }
     }
+
     for (let i = sparks.length - 1; i >= 0; i--) {
       const s = sparks[i];
       s.update();
       s.draw(ctx);
       if (s.life >= s.maxLife) sparks.splice(i, 1);
     }
-    requestAnimationFrame(loopSparks);
+
+    sparksRafId = requestAnimationFrame(loopSparks);
   }
+
+  // Pausar y reanudar eficientemente al cambiar pestaña
+  document.addEventListener('visibilitychange', () => {
+    isPageVisible = !document.hidden;
+    if (isPageVisible && isHeroVisible && !sparksRafId && !prefersReducedMotion) {
+      loopSparks();
+    }
+  });
+
+  // Pausar partículas mediante IntersectionObserver cuando la sección Hero sale de pantalla
+  const heroSection = document.querySelector('.hero-scroll-container');
+  if (heroSection && 'IntersectionObserver' in window) {
+    const heroObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isHeroVisible = entry.isIntersecting;
+        if (isHeroVisible && isPageVisible && !sparksRafId && !prefersReducedMotion) {
+          loopSparks();
+        }
+      });
+    }, { threshold: 0.05 });
+    heroObserver.observe(heroSection);
+  }
+
   if (!prefersReducedMotion) loopSparks();
 
   // 3. Hero 500vh GSAP Scroll Sequence
+  let heroTimeline = null;
   function initHeroScrollSequence() {
     if (prefersReducedMotion) return;
 
@@ -123,18 +196,23 @@
     const slide3 = document.getElementById('slide-details');
     const slide4 = document.getElementById('slide-brand');
 
+    if (!heroContainer || !machine) return;
+
+    // Limpieza de timelines previos si existían
+    if (heroTimeline) heroTimeline.kill();
+
     gsap.set([slide1, slide2, slide3, slide4], { opacity: 0, y: 40 });
-    gsap.set(machine, { opacity: 0, scale: 0.75, rotationY: -15, filter: 'brightness(0.2) contrast(1.4)' });
+    gsap.set(machine, { opacity: 0, scale: 0.75, rotationY: isMobileDevice ? 0 : -15 });
     gsap.set(arcLight, { opacity: 0, scale: 0.4 });
     gsap.set(welderBg, { opacity: 0 });
     gsap.set(hotspots, { opacity: 0 });
 
-    gsap.timeline({
+    heroTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: heroContainer,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: 0.8,
+        scrub: isMobileDevice ? 0.3 : 0.8,
         onUpdate: (self) => {
           const p = self.progress;
           if (telemetryFill) telemetryFill.style.width = `${(p * 100).toFixed(1)}%`;
@@ -146,7 +224,9 @@
           }
         }
       }
-    })
+    });
+
+    heroTimeline
       // Phase 1: Ignition
       .to({ intensity: 0 }, {
         intensity: 1.0, duration: 0.15,
@@ -157,7 +237,7 @@
       .to(slide1, { opacity: 1, y: 0, duration: 0.12 }, 0.04)
       .to(slide1, { opacity: 0, y: -35, duration: 0.08 }, 0.20)
       // Phase 2: Machine reveal
-      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, filter: 'brightness(1.05)', duration: 0.25 }, 0.22)
+      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, duration: 0.25 }, 0.22)
       .to(arcLight, { opacity: 0.45, scale: 1.0, duration: 0.2 }, 0.22)
       .to({ intensity: 1.0 }, {
         intensity: 0.35, duration: 0.2,
@@ -166,7 +246,7 @@
       .to(slide2, { opacity: 1, y: 0, duration: 0.14 }, 0.26)
       .to(slide2, { opacity: 0, y: -35, duration: 0.08 }, 0.48)
       // Phase 3: Zoom and details
-      .to(machine, { scale: 1.35, x: '-8%', y: '5%', duration: 0.24 }, 0.50)
+      .to(machine, { scale: 1.35, x: isMobileDevice ? '-3%' : '-8%', y: '5%', duration: 0.24 }, 0.50)
       .to(hotspots, { opacity: 1, duration: 0.12 }, 0.52)
       .to(slide3, { opacity: 1, y: 0, duration: 0.14 }, 0.53)
       .to(hotspots, { opacity: 0, duration: 0.08 }, 0.72)
