@@ -1,0 +1,186 @@
+[
+  {
+    "id": "rebel-emp-215ic",
+    "name": "ESAB Rebel EMP 215ic",
+    "category": "multiproceso",
+    "categoryLabel": "MIG / TIG / MMA",
+    "subtitle": "Multiproceso Inteligente Monofásico 120V / 230V con tecnología sMIG",
+    "image": "assets/products/rebel-215.png",
+    "priceUSD": 2450,
+    "pricePEN": 9180,
+    "stock": 5,
+    "specs": {
+      "amperaje": "5 – 240 A",
+      "ciclo": "130 A @ 60% / 205 A @ 25%",
+      "voltaje": "120V / 230V 1ph (Auto-detect)",
+      "peso": "18.2 kg"
+    },
+    "features": [
+      "Algoritmo sMIG exclusivo con memoria de técnica de arco dinámico",
+      "Pantalla TFT Color de 4.3 pulgadas con navegación multilingüe",
+      "Chasis unificado con 5 manijas de sujeción para movilidad total en obra",
+      "Compatible con carretes de 100mm y 200mm de alambre sólido o tubular"
+    ]
+  },
+  {
+    "id": "rogue-em-210",
+    "name": "ESAB Rogue EM 210 PRO",
+    "category": "multiproceso",
+    "categoryLabel": "MIG / MAG / MMA",
+    "subtitle": "Inversor MIG multiproceso portátil de alta estabilidad de arco",
+    "image": "assets/products/rogue-EM-210.png",
+    "priceUSD": 1420,
+    "pricePEN": 5320,
+    "stock": 6,
+    "specs": {
+      "amperaje": "30 – 210 A",
+      "ciclo": "210 A @ 30% / 135 A @ 100%",
+      "voltaje": "230V 1ph PFC",
+      "peso": "16.5 kg"
+    },
+    "features": [
+      "Mecanismo de alimentación de alambre de 2 rodillos de tracción sólida",
+      "Excelente comportamiento con alambre con y sin gas de protección",
+      "Protección térmica de grado industrial y chasis IP23S contra salpicaduras",
+      "Ajuste digital continuo de inductancia y voltaje"
+    ]
+  },
+  {
+    "id": "rogue-et-201ip-pro",
+    "name": "ESAB Rogue ET 201iP PRO",
+    "category": "electrodo",
+    "categoryLabel": "TIG HF PULSADO / MMA",
+    "subtitle": "Inversor TIG profesional con alta frecuencia y arco pulsado hasta 500 Hz",
+    "image": "assets/products/rogue-ET-201iP_PRO.png",
+    "priceUSD": 1280,
+    "pricePEN": 4800,
+    "stock": 4,
+    "specs": {
+      "amperaje": "5 – 200 A",
+      "ciclo": "200 A @ 25% / 129 A @ 60%",
+      "voltaje": "115V / 230V 1ph PFC",
+      "peso": "9.6 kg"
+    },
+    "features": [
+      "Encendido TIG por Alta Frecuencia (HF) y función Lift TIG",
+      "Frecuencia de pulso ajustable de 0.2 Hz hasta 500 Hz para control térmico",
+      "Rampa de subida y bajada de corriente, pre-gas y post-gas configurables",
+      "Control de factor de potencia (PFC) que permite extensiones de 100 m"
+    ]
+  },
+  {
+    "id": "rogue-es-245i",
+    "name": "ESAB Rogue ES 245i PRO",
+    "category": "electrodo",
+    "categoryLabel": "ELECTRODO / TIG LIFT",
+    "subtitle": "Inversor de alto amperaje para electrodo revestido y trabajo continuo",
+    "image": "assets/products/rogue-ES-245i.png",
+    "priceUSD": 950,
+    "pricePEN": 3560,
+    "stock": 8,
+    "specs": {
+      "amperaje": "10 – 240 A",
+      "ciclo": "240 A @ 25% / 150 A @ 100%",
+      "voltaje": "220V / 230V 1ph",
+      "peso": "8.4 kg"
+    },
+    "features": [
+      "Quema continua de electrodos celulósicos E6010, E6011 y básicos E7018",
+      "Control de Hot Start y Arc Force regulables para cero pegaduras",
+      "Pantalla digital ultra brillante visible bajo luz solar directa",
+      "Preparado para trabajar con generadores eléctricos sin pérdida de potencia"
+    ]
+  },
+  {
+    "id": "rogue-es-305i",
+    "name": "ESAB Rogue ES 305i",
+    "category": "electrodo",
+    "categoryLabel": "ELECTRODO PESADO TRIFÁSICO",
+    "subtitle": "Potencia industrial trifásica para electrodos de hasta 5.0 mm",
+    "image": "assets/products/rogue-ES-305i.png",
+    "priceUSD": 1390,
+    "pricePEN": 5210,
+    "stock": 3,
+    "specs": {
+      "amperaje": "15 – 300 A",
+      "ciclo": "300 A @ 40% / 190 A @ 100%",
+      "voltaje": "380V – 440V 3ph",
+      "peso": "11.5 kg"
+    },
+    "features": [
+      "Rendimiento ininterrumpido en electrodos de gran diámetro (hasta 5 mm)",
+      "Tecnología inverter de conmutación suave de alta eficiencia térmica",
+      "Diseño robusto para minería, calderería pesada y montaje estructural",
+      "Protección contra sobrecargas y caídas de tensión de red"
+    ]
+  },
+  {
+    "id": "rustler-em-215",
+    "name": "ESAB Rustler EM 215 Compact",
+    "category": "multiproceso",
+    "categoryLabel": "MIG COMPACTO TALLER",
+    "subtitle": "Equipo de soldadura MIG sinérgico para mantenimiento y carpintería metálica",
+    "image": "assets/products/rustler-215.png",
+    "priceUSD": 1650,
+    "pricePEN": 6180,
+    "stock": 4,
+    "specs": {
+      "amperaje": "30 – 215 A",
+      "ciclo": "215 A @ 35% / 130 A @ 100%",
+      "voltaje": "220V 1ph",
+      "peso": "24.0 kg"
+    },
+    "features": [
+      "Líneas sinérgicas pre-cargadas para alambres de acero al carbono e inox",
+      "Compartimiento interno para bobinas estándar de 15 kg (300 mm)",
+      "Rodillos de alimentación mecanizados con precisión para cero atascos",
+      "Arranque suave de arco sin proyecciones"
+    ]
+  },
+  {
+    "id": "rustler-em-300",
+    "name": "ESAB Rustler EM 300C",
+    "category": "industrial",
+    "categoryLabel": "MIG INDUSTRIAL 4 RODILLOS",
+    "subtitle": "Inversor MIG/MAG de alto tonelaje con tren de arrastre de 4 rodillos",
+    "image": "assets/products/rustler-300.png",
+    "priceUSD": 2890,
+    "pricePEN": 10830,
+    "stock": 2,
+    "specs": {
+      "amperaje": "30 – 300 A",
+      "ciclo": "300 A @ 40% / 200 A @ 100%",
+      "voltaje": "380V – 440V 3ph",
+      "peso": "49.5 kg"
+    },
+    "features": [
+      "Sistema de alimentación de 4 rodillos de alta tracción para antorchas largas",
+      "Chasis industrial sobre ruedas con bandeja portacilindro reforzada",
+      "Ajustes de pre/post-gas, tiempo de quemado de alambre y velocidad de avance",
+      "Optimizado para soldadura de placas gruesas en calderería y transporte"
+    ]
+  },
+  {
+    "id": "warrior-500",
+    "name": "ESAB Warrior 500i CC/CV",
+    "category": "industrial",
+    "categoryLabel": "HEAVY DUTY INDUSTRIAL",
+    "subtitle": "Inversor multiproceso de servicio continuo para las industrias más duras",
+    "image": "assets/products/warrior-500.png",
+    "priceUSD": 5850,
+    "pricePEN": 21930,
+    "stock": 2,
+    "specs": {
+      "amperaje": "16 – 500 A",
+      "ciclo": "500 A @ 60% / 400 A @ 100%",
+      "voltaje": "380V – 460V 3ph",
+      "peso": "52.0 kg"
+    },
+    "features": [
+      "Multiproceso completo: MIG/MAG, FCAW tubular, Electrodo y Desbaste con arco aire (Gouging)",
+      "Tecnología inverter de respuesta instantánea con ahorro eléctrico de hasta un 30%",
+      "Túnel de ventilación completamente aislado que protege la electrónica del polvo metálico",
+      "Compatible con alimentadores de alambre Robust Feed y Warrior Feed"
+    ]
+  }
+]

@@ -1,30 +1,40 @@
 /**
- * MAQSYMA - Industrial Cinematic Engine
- * Powered by GSAP + ScrollTrigger + Canvas Particle Sparks
- * High performance, zero frame drops, responsive scrub control
+ * MAQSYMA - Industrial Cinematic Engine & E-Commerce Core
+ * WhatsApp Integration: +51 957 082 739
+ * Currency Support: USD ($) & PEN (S/.)
+ * Dynamic Inventory Management & LocalStorage Persistence
  */
 
 (function () {
   'use strict';
 
-  // 1. Register ScrollTrigger
+  // Master Configuration
+  const CONFIG = {
+    whatsappNumber: '51957082739',
+    storageKeyProducts: 'maqsyma_inventory_v1',
+    storageKeyCart: 'maqsyma_cart_v1',
+    storageKeyCurrency: 'maqsyma_currency_v1'
+  };
+
+  // State Management
+  let products = [];
+  let cart = [];
+  let currentCurrency = localStorage.getItem(CONFIG.storageKeyCurrency) || 'USD';
+  let activeFilter = 'all';
+  let searchQuery = '';
+
+  // 1. GSAP ScrollTrigger Registration
   if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
     gsap.registerPlugin(ScrollTrigger);
-  } else {
-    console.warn('GSAP or ScrollTrigger not loaded yet.');
-    return;
   }
 
-  // Check prefers-reduced-motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 2. High-Performance Particle Engine for Electric Arc Sparks
+  // 2. High-Performance Sparks Canvas
   const canvas = document.getElementById('sparksCanvas');
   const ctx = canvas ? canvas.getContext('2d') : null;
   let sparks = [];
-  let sparksIntensity = 0; // Controlled dynamically via GSAP ScrollTrigger
-  let arcBrightness = 0;
-  let animFrameId = null;
+  let sparksIntensity = 0;
 
   function resizeCanvas() {
     if (!canvas) return;
@@ -38,33 +48,23 @@
     constructor(x, y, burst = false) {
       this.reset(x, y, burst);
     }
-
     reset(x, y, burst) {
       this.x = x || canvas.width / 2;
       this.y = y || canvas.height * 0.52;
-      
       const angle = (Math.random() * Math.PI * 2);
       const speed = burst ? (Math.random() * 14 + 4) : (Math.random() * 8 + 2);
-      
       this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - (Math.random() * 4 + 1); // upwards bias
+      this.vy = Math.sin(angle) * speed - (Math.random() * 4 + 1);
       this.gravity = 0.28;
       this.drag = 0.96;
       this.life = 0;
       this.maxLife = Math.random() * 35 + 20;
       this.size = Math.random() * 2.8 + 1.2;
-      
-      // Color: white-hot center to industrial ESAB yellow or arc electric cyan
       const r = Math.random();
-      if (r < 0.6) {
-        this.color = '#F5C400'; // ESAB Yellow
-      } else if (r < 0.85) {
-        this.color = '#FFFFFF'; // White Hot
-      } else {
-        this.color = '#70D6FF'; // Ionized Cyan
-      }
+      if (r < 0.6) this.color = '#F5C400';
+      else if (r < 0.85) this.color = '#FFFFFF';
+      else this.color = '#70D6FF';
     }
-
     update() {
       this.vx *= this.drag;
       this.vy = (this.vy + this.gravity) * this.drag;
@@ -72,29 +72,17 @@
       this.y += this.vy;
       this.life++;
     }
-
     draw(context) {
       const remaining = 1 - (this.life / this.maxLife);
       if (remaining <= 0) return;
-
       context.save();
       context.globalAlpha = remaining;
       context.fillStyle = this.color;
       context.shadowColor = this.color;
       context.shadowBlur = 10;
-      
       context.beginPath();
       context.arc(this.x, this.y, this.size * remaining, 0, Math.PI * 2);
       context.fill();
-
-      // Spark trail line
-      context.strokeStyle = this.color;
-      context.lineWidth = this.size * 0.8 * remaining;
-      context.beginPath();
-      context.moveTo(this.x, this.y);
-      context.lineTo(this.x - this.vx * 1.8, this.y - this.vy * 1.8);
-      context.stroke();
-
       context.restore();
     }
   }
@@ -102,45 +90,25 @@
   function loopSparks() {
     if (!ctx || !canvas) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Spawn sparks based on intensity
     if (sparksIntensity > 0.05 && !prefersReducedMotion) {
       const count = Math.floor(sparksIntensity * 6);
-      const originX = canvas.width * 0.5;
-      const originY = canvas.height * 0.52;
       for (let i = 0; i < count; i++) {
-        if (sparks.length < 220) {
-          sparks.push(new Spark(originX, originY));
-        }
+        if (sparks.length < 220) sparks.push(new Spark());
       }
     }
-
-    // Update & draw active sparks
     for (let i = sparks.length - 1; i >= 0; i--) {
       const s = sparks[i];
       s.update();
       s.draw(ctx);
-      if (s.life >= s.maxLife) {
-        sparks.splice(i, 1);
-      }
+      if (s.life >= s.maxLife) sparks.splice(i, 1);
     }
-
-    animFrameId = requestAnimationFrame(loopSparks);
+    requestAnimationFrame(loopSparks);
   }
+  if (!prefersReducedMotion) loopSparks();
 
-  if (!prefersReducedMotion) {
-    loopSparks();
-  }
-
-  // 3. MASTER GSAP SCROLLTRIGGER 500VH SCRUBBED TIMELINE
+  // 3. Hero 500vh GSAP Scroll Sequence
   function initHeroScrollSequence() {
-    if (prefersReducedMotion) {
-      // In reduced motion, ensure elements are cleanly visible without scroll scrubbing
-      gsap.set(['#slide-intro', '#slide-machine', '#slide-details', '#slide-brand'], { opacity: 1, y: 0 });
-      gsap.set('.machine-hero-wrapper', { opacity: 1, scale: 1 });
-      gsap.set('.machine-hotspots', { opacity: 1 });
-      return;
-    }
+    if (prefersReducedMotion) return;
 
     const heroContainer = document.querySelector('.hero-scroll-container');
     const machine = document.querySelector('.machine-hero-wrapper');
@@ -155,24 +123,21 @@
     const slide3 = document.getElementById('slide-details');
     const slide4 = document.getElementById('slide-brand');
 
-    // Initial state
     gsap.set([slide1, slide2, slide3, slide4], { opacity: 0, y: 40 });
     gsap.set(machine, { opacity: 0, scale: 0.75, rotationY: -15, filter: 'brightness(0.2) contrast(1.4)' });
     gsap.set(arcLight, { opacity: 0, scale: 0.4 });
     gsap.set(welderBg, { opacity: 0 });
     gsap.set(hotspots, { opacity: 0 });
 
-    const heroTimeline = gsap.timeline({
+    gsap.timeline({
       scrollTrigger: {
         trigger: heroContainer,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: 0.8, // Smooth physical drag & catch up
+        scrub: 0.8,
         onUpdate: (self) => {
           const p = self.progress;
-          if (telemetryFill) {
-            telemetryFill.style.width = `${(p * 100).toFixed(1)}%`;
-          }
+          if (telemetryFill) telemetryFill.style.width = `${(p * 100).toFixed(1)}%`;
           if (telemetryStep) {
             if (p < 0.25) telemetryStep.textContent = '01 / IGNICIÓN ARCO';
             else if (p < 0.55) telemetryStep.textContent = '02 / INVERSORA ESAB';
@@ -181,262 +146,633 @@
           }
         }
       }
-    });
-
-    // ==========================================
-    // PHASE 1: [0.00 - 0.22] Arc Ignition & Sparks
-    // ==========================================
-    heroTimeline
-      // Sparks ignite
+    })
+      // Phase 1: Ignition
       .to({ intensity: 0 }, {
-        intensity: 1.0,
-        duration: 0.15,
-        onUpdate: function () {
-          sparksIntensity = this.targets()[0].intensity;
-        }
+        intensity: 1.0, duration: 0.15,
+        onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0)
-      .to(arcLight, {
-        opacity: 0.95,
-        scale: 1.3,
-        duration: 0.15,
-        ease: 'power2.inOut'
-      }, 0)
-      .to(welderBg, {
-        opacity: 0.55,
-        duration: 0.18,
-        ease: 'power2.out'
-      }, 0.02)
-      .to(slide1, {
-        opacity: 1,
-        y: 0,
-        duration: 0.12,
-        ease: 'power2.out'
-      }, 0.04)
-      .to(slide1, {
-        opacity: 0,
-        y: -35,
-        duration: 0.08,
-        ease: 'power2.in'
-      }, 0.20)
-
-      // ==========================================
-      // PHASE 2: [0.22 - 0.50] Machine Revelation
-      // ==========================================
-      .to(machine, {
-        opacity: 1,
-        scale: 1.0,
-        rotationY: 0,
-        filter: 'brightness(1.05) contrast(1.08)',
-        duration: 0.25,
-        ease: 'power3.out'
-      }, 0.22)
-      .to(arcLight, {
-        opacity: 0.45,
-        scale: 1.0,
-        duration: 0.2,
-        ease: 'power2.out'
-      }, 0.22)
+      .to(arcLight, { opacity: 0.95, scale: 1.3, duration: 0.15 }, 0)
+      .to(welderBg, { opacity: 0.55, duration: 0.18 }, 0.02)
+      .to(slide1, { opacity: 1, y: 0, duration: 0.12 }, 0.04)
+      .to(slide1, { opacity: 0, y: -35, duration: 0.08 }, 0.20)
+      // Phase 2: Machine reveal
+      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, filter: 'brightness(1.05)', duration: 0.25 }, 0.22)
+      .to(arcLight, { opacity: 0.45, scale: 1.0, duration: 0.2 }, 0.22)
       .to({ intensity: 1.0 }, {
-        intensity: 0.35,
-        duration: 0.2,
-        onUpdate: function () {
-          sparksIntensity = this.targets()[0].intensity;
-        }
+        intensity: 0.35, duration: 0.2,
+        onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0.22)
-      .to(slide2, {
-        opacity: 1,
-        y: 0,
-        duration: 0.14,
-        ease: 'power2.out'
-      }, 0.26)
-      .to(slide2, {
-        opacity: 0,
-        y: -35,
-        duration: 0.08,
-        ease: 'power2.in'
-      }, 0.48)
-
-      // ==========================================
-      // PHASE 3: [0.50 - 0.76] Technical Zoom & Hotspots
-      // ==========================================
-      .to(machine, {
-        scale: 1.35,
-        x: '-8%',
-        y: '5%',
-        duration: 0.24,
-        ease: 'power2.inOut'
-      }, 0.50)
-      .to(hotspots, {
-        opacity: 1,
-        duration: 0.12,
-        ease: 'power2.out'
-      }, 0.52)
-      .to(slide3, {
-        opacity: 1,
-        y: 0,
-        duration: 0.14,
-        ease: 'power2.out'
-      }, 0.53)
-      .to(hotspots, {
-        opacity: 0,
-        duration: 0.08,
-        ease: 'power2.in'
-      }, 0.72)
-      .to(slide3, {
-        opacity: 0,
-        y: -35,
-        duration: 0.08,
-        ease: 'power2.in'
-      }, 0.74)
-
-      // ==========================================
-      // PHASE 4: [0.76 - 1.00] MAQSYMA Authority & Catalog Handoff
-      // ==========================================
-      .to(machine, {
-        scale: 0.95,
-        x: '0%',
-        y: '0%',
-        opacity: 0.85,
-        duration: 0.20,
-        ease: 'power2.out'
-      }, 0.76)
-      .to(welderBg, {
-        opacity: 0.15,
-        duration: 0.18
-      }, 0.76)
+      .to(slide2, { opacity: 1, y: 0, duration: 0.14 }, 0.26)
+      .to(slide2, { opacity: 0, y: -35, duration: 0.08 }, 0.48)
+      // Phase 3: Zoom and details
+      .to(machine, { scale: 1.35, x: '-8%', y: '5%', duration: 0.24 }, 0.50)
+      .to(hotspots, { opacity: 1, duration: 0.12 }, 0.52)
+      .to(slide3, { opacity: 1, y: 0, duration: 0.14 }, 0.53)
+      .to(hotspots, { opacity: 0, duration: 0.08 }, 0.72)
+      .to(slide3, { opacity: 0, y: -35, duration: 0.08 }, 0.74)
+      // Phase 4: MAQSYMA Authority
+      .to(machine, { scale: 0.95, x: '0%', y: '0%', opacity: 0.85, duration: 0.20 }, 0.76)
+      .to(welderBg, { opacity: 0.15, duration: 0.18 }, 0.76)
       .to({ intensity: 0.35 }, {
-        intensity: 0.0,
-        duration: 0.20,
-        onUpdate: function () {
-          sparksIntensity = this.targets()[0].intensity;
-        }
+        intensity: 0.0, duration: 0.20,
+        onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0.76)
-      .to(slide4, {
-        opacity: 1,
-        y: 0,
-        duration: 0.16,
-        ease: 'power2.out'
-      }, 0.80);
+      .to(slide4, { opacity: 1, y: 0, duration: 0.16 }, 0.80);
   }
 
-  // 4. Product Tab Filtering Logic
-  function initProductTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const cards = document.querySelectorAll('.product-card');
-
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        const filter = tab.getAttribute('data-filter');
-
-        cards.forEach(card => {
-          const category = card.getAttribute('data-category');
-          if (filter === 'all' || category === filter) {
-            gsap.to(card, {
-              opacity: 1,
-              scale: 1,
-              display: 'flex',
-              duration: 0.3,
-              ease: 'power2.out'
-            });
-          } else {
-            gsap.to(card, {
-              opacity: 0,
-              scale: 0.95,
-              duration: 0.2,
-              ease: 'power2.in',
-              onComplete: () => {
-                card.style.display = 'none';
-              }
-            });
-          }
-        });
-      });
-    });
+  // 4. Products & Inventory Engine
+  async function loadProducts() {
+    const saved = localStorage.getItem(CONFIG.storageKeyProducts);
+    if (saved) {
+      try {
+        products = JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing stored products', e);
+      }
+    }
+    if (!products || products.length === 0) {
+      try {
+        const resp = await fetch('data/products.json');
+        products = await resp.json();
+        saveProducts();
+      } catch (err) {
+        console.warn('Fallback products loaded from local template');
+      }
+    }
+    renderCatalog();
+    populateQuoteSelect();
   }
 
-  // 5. Dynamic WhatsApp Quote Configurator
-  function initWhatsAppConfigurator() {
-    const selectModel = document.getElementById('quote-model');
-    const inputUsage = document.getElementById('quote-usage');
-    const inputCity = document.getElementById('quote-city');
-    const btnQuote = document.getElementById('btn-whatsapp-submit');
+  function saveProducts() {
+    localStorage.setItem(CONFIG.storageKeyProducts, JSON.stringify(products));
+  }
 
-    // Also support quick quotes from product cards
-    const cardQuoteBtns = document.querySelectorAll('.btn-card-quote');
-    cardQuoteBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const modelName = btn.getAttribute('data-model');
-        if (selectModel) {
-          selectModel.value = modelName;
-          const consultancySection = document.getElementById('cotizaciones');
-          if (consultancySection) {
-            consultancySection.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      });
+  function formatPrice(usd, pen) {
+    if (currentCurrency === 'PEN') {
+      return `S/. ${pen.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+    }
+    return `$ ${usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+  }
+
+  function renderCatalog() {
+    const grid = document.getElementById('products-grid');
+    if (!grid) return;
+
+    const filtered = products.filter(p => {
+      const matchesCategory = (activeFilter === 'all' || p.category === activeFilter);
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = !q || p.name.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q) || (p.categoryLabel && p.categoryLabel.toLowerCase().includes(q));
+      return matchesCategory && matchesSearch;
     });
 
-    if (btnQuote) {
-      btnQuote.addEventListener('click', (e) => {
-        e.preventDefault();
-        const model = selectModel ? selectModel.value : 'Equipo ESAB Inversor';
-        const usage = inputUsage && inputUsage.value.trim() ? inputUsage.value.trim() : 'Trabajo Industrial / Taller';
-        const city = inputCity && inputCity.value.trim() ? inputCity.value.trim() : 'México';
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--color-metal-400);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <p style="font-size: 16px; font-weight: 600;">No se encontraron equipos que coincidan con la búsqueda.</p>
+        </div>
+      `;
+      return;
+    }
 
-        const message = `¡Hola MAQSYMA! Requiero cotización formal y asesoría técnica para la máquina inversora:\n\n*Modelo:* ${model}\n*Aplicación/Uso:* ${usage}\n*Ubicación:* ${city}\n\n¿Tienen disponibilidad para entrega y soporte de garantía?`;
+    grid.innerHTML = filtered.map(p => {
+      const inStock = p.stock > 0;
+      const stockBadge = inStock
+        ? `<span class="badge-stock in-stock"><svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg> En Stock (${p.stock})</span>`
+        : `<span class="badge-stock out-of-stock">Agotado / Bajo Pedido</span>`;
 
-        // Direct WhatsApp API
-        const phone = '525540001234'; // Dedicated corporate line placeholder
-        const encodedUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-        window.open(encodedUrl, '_blank', 'noopener,noreferrer');
-      });
+      return `
+        <article class="product-card" data-id="${p.id}" data-category="${p.category}">
+          <div class="card-top-badges">
+            <span class="badge-category">${p.categoryLabel || p.category}</span>
+            ${stockBadge}
+          </div>
+          <div class="product-image-container" onclick="window.MAQSYMA.openSpecModal('${p.id}')">
+            <img src="${p.image}" alt="${p.name}" loading="lazy">
+          </div>
+          <div class="product-details">
+            <h3 class="product-title" onclick="window.MAQSYMA.openSpecModal('${p.id}')">${p.name}</h3>
+            <p class="product-process-tag">${p.subtitle}</p>
+            
+            <div class="product-price-row">
+              <span class="price-tag">${formatPrice(p.priceUSD, p.pricePEN)}</span>
+              <span class="price-currency">${currentCurrency === 'PEN' ? 'PEN (IGV Inc.)' : '+ IVA'}</span>
+            </div>
+
+            <div class="specs-list">
+              <div class="spec-item">
+                <span class="spec-name">Rango Amperaje</span>
+                <span class="spec-val">${p.specs?.amperaje || 'N/A'}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Ciclo de Trabajo</span>
+                <span class="spec-val">${p.specs?.ciclo || 'N/A'}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Voltaje Entrada</span>
+                <span class="spec-val">${p.specs?.voltaje || 'N/A'}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-name">Peso Chasis</span>
+                <span class="spec-val">${p.specs?.peso || 'N/A'}</span>
+              </div>
+            </div>
+
+            <div class="product-footer-actions">
+              <button class="btn-card-add" ${!inStock ? 'disabled' : ''} onclick="window.MAQSYMA.addToCart('${p.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                ${inStock ? 'Añadir al Carrito' : 'Sin Stock'}
+              </button>
+              <button class="btn-card-spec" onclick="window.MAQSYMA.openSpecModal('${p.id}')" title="Ver ficha técnica completa">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+  }
+
+  // 5. Shopping Cart System (Drawer + WhatsApp Dispatch)
+  function loadCart() {
+    const saved = localStorage.getItem(CONFIG.storageKeyCart);
+    if (saved) {
+      try { cart = JSON.parse(saved); } catch (e) { cart = []; }
+    }
+    updateCartUI();
+  }
+
+  function saveCart() {
+    localStorage.setItem(CONFIG.storageKeyCart, JSON.stringify(cart));
+    updateCartUI();
+  }
+
+  function addToCart(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product || product.stock <= 0) return;
+
+    const existing = cart.find(item => item.id === productId);
+    if (existing) {
+      if (existing.qty < product.stock) {
+        existing.qty++;
+        showToast(`Agregado: ${product.name} (x${existing.qty})`);
+      } else {
+        showToast(`Stock máximo alcanzado para este equipo (${product.stock} disp.)`);
+      }
+    } else {
+      cart.push({ id: productId, qty: 1 });
+      showToast(`Equipo añadido al carrito`);
+    }
+    saveCart();
+    openCartDrawer();
+  }
+
+  function updateQty(productId, delta) {
+    const item = cart.find(i => i.id === productId);
+    const product = products.find(p => p.id === productId);
+    if (!item || !product) return;
+
+    item.qty += delta;
+    if (item.qty <= 0) {
+      cart = cart.filter(i => i.id !== productId);
+    } else if (item.qty > product.stock) {
+      item.qty = product.stock;
+      showToast(`Stock máximo alcanzado (${product.stock} unidades)`);
+    }
+    saveCart();
+  }
+
+  function removeFromCart(productId) {
+    cart = cart.filter(i => i.id !== productId);
+    saveCart();
+    showToast('Equipo eliminado del pedido');
+  }
+
+  function updateCartUI() {
+    const badge = document.getElementById('cart-count-badge');
+    const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
+    if (badge) badge.textContent = totalCount;
+
+    const body = document.getElementById('cart-items-body');
+    const totalElem = document.getElementById('cart-total-amount');
+
+    if (!body) return;
+
+    if (cart.length === 0) {
+      body.innerHTML = `
+        <div class="cart-empty-message">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <p>Tu carrito de cotización está vacío.</p>
+          <button class="btn-primary-esab" onclick="window.MAQSYMA.closeCartDrawer(); window.location.href='#catalogo';" style="padding: 10px 20px; font-size: 12px;">Explorar Catálogo</button>
+        </div>
+      `;
+      if (totalElem) totalElem.textContent = currentCurrency === 'PEN' ? 'S/. 0.00' : '$ 0.00 USD';
+      return;
+    }
+
+    let totalSumUSD = 0;
+    let totalSumPEN = 0;
+
+    body.innerHTML = cart.map(item => {
+      const p = products.find(prod => prod.id === item.id);
+      if (!p) return '';
+
+      totalSumUSD += (p.priceUSD * item.qty);
+      totalSumPEN += (p.pricePEN * item.qty);
+
+      const itemPrice = currentCurrency === 'PEN'
+        ? `S/. ${(p.pricePEN * item.qty).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`
+        : `$ ${(p.priceUSD * item.qty).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+
+      return `
+        <div class="cart-item-row">
+          <div class="cart-item-thumb">
+            <img src="${p.image}" alt="${p.name}">
+          </div>
+          <div class="cart-item-info">
+            <h4>${p.name}</h4>
+            <div class="cart-item-price">${itemPrice}</div>
+            <div class="cart-item-controls">
+              <button class="btn-qty" onclick="window.MAQSYMA.updateQty('${p.id}', -1)">-</button>
+              <span class="cart-qty-val">${item.qty}</span>
+              <button class="btn-qty" onclick="window.MAQSYMA.updateQty('${p.id}', 1)">+</button>
+            </div>
+          </div>
+          <button class="btn-item-remove" onclick="window.MAQSYMA.removeFromCart('${p.id}')" title="Quitar equipo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    if (totalElem) {
+      totalElem.textContent = currentCurrency === 'PEN'
+        ? `S/. ${totalSumPEN.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`
+        : `$ ${totalSumUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
     }
   }
 
-  // 6. Smooth Scroll Anchor Handler
-  function initAnchorLinks() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href === '#') return;
-        const target = document.querySelector(href);
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
+  function checkoutWhatsApp() {
+    if (cart.length === 0) {
+      showToast('Tu carrito está vacío');
+      return;
+    }
+
+    let totalSum = 0;
+    let listText = '';
+
+    cart.forEach(item => {
+      const p = products.find(prod => prod.id === item.id);
+      if (p) {
+        const subtotal = currentCurrency === 'PEN' ? (p.pricePEN * item.qty) : (p.priceUSD * item.qty);
+        totalSum += subtotal;
+        const curLabel = currentCurrency === 'PEN' ? `S/. ${subtotal.toFixed(2)}` : `$ ${subtotal.toFixed(2)} USD`;
+        listText += `• *${p.name}* x${item.qty} → ${curLabel}\n`;
+      }
+    });
+
+    const totalFormatted = currentCurrency === 'PEN' ? `S/. ${totalSum.toFixed(2)} PEN` : `$ ${totalSum.toFixed(2)} USD`;
+
+    const message = `⚡ *ORDEN DE PEDIDO / COTIZACIÓN MAQSYMA*\n` +
+      `-----------------------------------------\n` +
+      `¡Hola MAQSYMA! Deseo solicitar la compra/cotización formal de los siguientes equipos ESAB:\n\n` +
+      `${listText}\n` +
+      `*TOTAL ESTIMADO:* ${totalFormatted}\n` +
+      `*Moneda:* ${currentCurrency}\n` +
+      `-----------------------------------------\n` +
+      `Por favor indíquenme disponibilidad para despacho inmediato, facturación y opciones de envío.`;
+
+    const encoded = encodeURIComponent(message);
+    window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encoded}`, '_blank');
+  }
+
+  function openCartDrawer() {
+    const drawer = document.getElementById('cart-drawer-overlay');
+    if (drawer) drawer.classList.add('active');
+  }
+
+  function closeCartDrawer() {
+    const drawer = document.getElementById('cart-drawer-overlay');
+    if (drawer) drawer.classList.remove('active');
+  }
+
+  // 6. Product Technical Specification Modal
+  function openSpecModal(productId) {
+    const p = products.find(prod => prod.id === productId);
+    if (!p) return;
+
+    const modal = document.getElementById('spec-modal-overlay');
+    const title = document.getElementById('modal-spec-title');
+    const body = document.getElementById('modal-spec-body');
+
+    if (title) title.textContent = p.name;
+    if (body) {
+      const featuresHTML = (p.features || []).map(f => `<li>${f}</li>`).join('');
+      body.innerHTML = `
+        <div class="modal-img-wrap">
+          <img src="${p.image}" alt="${p.name}">
+        </div>
+        <div>
+          <span class="badge-category" style="margin-bottom: 8px;">${p.categoryLabel || p.category}</span>
+          <h3 style="font-family: var(--font-display); font-size: 24px; color: #fff; margin: 8px 0;">${p.name}</h3>
+          <p style="color: var(--color-metal-300); font-size: 14px; margin-bottom: 16px;">${p.subtitle}</p>
+          <div style="font-family: var(--font-display); font-size: 26px; color: var(--color-yellow-esab); font-weight: 800; margin-bottom: 18px;">
+            ${formatPrice(p.priceUSD, p.pricePEN)}
+            <span style="font-size: 13px; color: var(--color-metal-400); font-family: var(--font-mono); font-weight: normal;">${currentCurrency === 'PEN' ? 'PEN (IGV Inc.)' : '+ IVA'}</span>
+          </div>
+
+          <table class="modal-specs-table">
+            <tr><td>Rango Amperaje:</td><td>${p.specs?.amperaje || 'N/A'}</td></tr>
+            <tr><td>Ciclo de Trabajo:</td><td>${p.specs?.ciclo || 'N/A'}</td></tr>
+            <tr><td>Voltaje de Entrada:</td><td>${p.specs?.voltaje || 'N/A'}</td></tr>
+            <tr><td>Peso de Chasis:</td><td>${p.specs?.peso || 'N/A'}</td></tr>
+            <tr><td>Disponibilidad:</td><td><strong style="color: ${p.stock > 0 ? '#4ade80' : '#ef4444'}">${p.stock > 0 ? `${p.stock} unidades en stock` : 'Agotado / Bajo pedido'}</strong></td></tr>
+          </table>
+
+          <ul class="modal-features-list">
+            ${featuresHTML}
+          </ul>
+        </div>
+      `;
+    }
+
+    const modalActionBtn = document.getElementById('modal-action-add');
+    if (modalActionBtn) {
+      modalActionBtn.onclick = () => {
+        addToCart(p.id);
+        closeSpecModal();
+      };
+      modalActionBtn.disabled = p.stock <= 0;
+      modalActionBtn.textContent = p.stock > 0 ? 'Añadir al Carrito' : 'Sin Stock';
+    }
+
+    if (modal) modal.classList.add('active');
+  }
+
+  function closeSpecModal() {
+    const modal = document.getElementById('spec-modal-overlay');
+    if (modal) modal.classList.remove('active');
+  }
+
+  // 7. Inventory & Stock Admin Panel (Direct without login)
+  function openAdminModal() {
+    renderAdminTable();
+    const modal = document.getElementById('admin-modal-overlay');
+    if (modal) modal.classList.add('active');
+  }
+
+  function closeAdminModal() {
+    const modal = document.getElementById('admin-modal-overlay');
+    if (modal) modal.classList.remove('active');
+  }
+
+  function renderAdminTable() {
+    const tbody = document.getElementById('admin-products-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = products.map(p => {
+      return `
+        <tr>
+          <td><img src="${p.image}" alt="" style="width: 44px; height: 38px; object-fit: contain; background: #161a22; border-radius: 4px; padding: 2px;"></td>
+          <td><strong>${p.name}</strong><br><span style="font-size: 11px; color: var(--color-metal-400);">${p.category}</span></td>
+          <td><input type="number" class="admin-input-small" value="${p.stock}" min="0" onchange="window.MAQSYMA.updateProductStock('${p.id}', this.value)"></td>
+          <td><input type="number" class="admin-input-small" value="${p.priceUSD}" min="0" step="10" onchange="window.MAQSYMA.updateProductPriceUSD('${p.id}', this.value)"></td>
+          <td><input type="number" class="admin-input-small" value="${p.pricePEN}" min="0" step="10" onchange="window.MAQSYMA.updateProductPricePEN('${p.id}', this.value)"></td>
+          <td>
+            <button class="btn-admin-action btn-admin-delete" onclick="window.MAQSYMA.deleteProduct('${p.id}')">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function updateProductStock(id, newStock) {
+    const p = products.find(prod => prod.id === id);
+    if (p) {
+      p.stock = Math.max(0, parseInt(newStock) || 0);
+      saveProducts();
+      renderCatalog();
+      showToast(`Stock actualizado para ${p.name}: ${p.stock}`);
+    }
+  }
+
+  function updateProductPriceUSD(id, newPrice) {
+    const p = products.find(prod => prod.id === id);
+    if (p) {
+      p.priceUSD = Math.max(0, parseFloat(newPrice) || 0);
+      saveProducts();
+      renderCatalog();
+      showToast(`Precio USD actualizado: $${p.priceUSD}`);
+    }
+  }
+
+  function updateProductPricePEN(id, newPrice) {
+    const p = products.find(prod => prod.id === id);
+    if (p) {
+      p.pricePEN = Math.max(0, parseFloat(newPrice) || 0);
+      saveProducts();
+      renderCatalog();
+      showToast(`Precio PEN actualizado: S/.${p.pricePEN}`);
+    }
+  }
+
+  function deleteProduct(id) {
+    if (confirm('¿Confirmas que deseas eliminar este equipo del catálogo?')) {
+      products = products.filter(p => p.id !== id);
+      saveProducts();
+      renderAdminTable();
+      renderCatalog();
+      showToast('Equipo eliminado del catálogo');
+    }
+  }
+
+  function addNewProductFromAdmin() {
+    const name = document.getElementById('new-prod-name')?.value.trim();
+    const cat = document.getElementById('new-prod-category')?.value;
+    const catLabel = document.getElementById('new-prod-label')?.value.trim() || cat.toUpperCase();
+    const subtitle = document.getElementById('new-prod-subtitle')?.value.trim();
+    const img = document.getElementById('new-prod-img')?.value.trim() || 'assets/products/esab_hero_clean.png';
+    const priceUSD = parseFloat(document.getElementById('new-prod-usd')?.value) || 1000;
+    const pricePEN = parseFloat(document.getElementById('new-prod-pen')?.value) || 3750;
+    const stock = parseInt(document.getElementById('new-prod-stock')?.value) || 1;
+    const amperaje = document.getElementById('new-prod-amp')?.value.trim() || '200 A';
+    const ciclo = document.getElementById('new-prod-ciclo')?.value.trim() || '200 A @ 30%';
+
+    if (!name) {
+      alert('Por favor ingresa al menos el nombre del equipo');
+      return;
+    }
+
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const newProduct = {
+      id,
+      name,
+      category: cat,
+      categoryLabel: catLabel,
+      subtitle: subtitle || 'Equipo Inversor Profesional ESAB',
+      image: img,
+      priceUSD,
+      pricePEN,
+      stock,
+      specs: {
+        amperaje,
+        ciclo,
+        voltaje: '220V 1ph / 3ph',
+        peso: '12 kg'
+      },
+      features: [
+        'Tecnología de arco inverso de alta eficiencia',
+        'Garantía directa de 3 años MAQSYMA + ESAB',
+        'Componentes industriales de protección térmica'
+      ]
+    };
+
+    products.unshift(newProduct);
+    saveProducts();
+    renderAdminTable();
+    renderCatalog();
+    showToast(`¡Equipo ${name} añadido con éxito!`);
+
+    // Reset fields
+    document.getElementById('adminAddForm').reset();
+  }
+
+  function resetDefaultCatalog() {
+    if (confirm('¿Restaurar el catálogo original de fábrica?')) {
+      localStorage.removeItem(CONFIG.storageKeyProducts);
+      products = [];
+      loadProducts();
+      renderAdminTable();
+      showToast('Catálogo restablecido al estado original');
+    }
+  }
+
+  // 8. Currency Toggle
+  function setCurrency(cur) {
+    currentCurrency = cur;
+    localStorage.setItem(CONFIG.storageKeyCurrency, cur);
+    document.querySelectorAll('.currency-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.currency === cur);
+    });
+    renderCatalog();
+    updateCartUI();
+  }
+
+  // 9. Toast Notification
+  function showToast(msg) {
+    let toast = document.getElementById('toast-notification');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'toast-notification';
+      toast.className = 'toast-notification';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-yellow-esab)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      <span>${msg}</span>
+    `;
+    toast.classList.add('active');
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+      toast.classList.remove('active');
+    }, 2800);
+  }
+
+  // 10. Direct WhatsApp Quote Form in Section
+  function populateQuoteSelect() {
+    const select = document.getElementById('quote-model');
+    if (!select) return;
+    select.innerHTML = products.map(p => `<option value="${p.name}">${p.name} (${p.categoryLabel || p.category})</option>`).join('') +
+      `<option value="Asesoría General">No estoy seguro / Requiero recomendación técnica</option>`;
+  }
+
+  function initWhatsAppDirectForm() {
+    const btn = document.getElementById('btn-whatsapp-submit');
+    if (!btn) return;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const model = document.getElementById('quote-model')?.value || 'Equipo ESAB';
+      const usage = document.getElementById('quote-usage')?.value.trim() || 'Trabajo industrial / Taller';
+      const city = document.getElementById('quote-city')?.value.trim() || 'Perú';
+
+      const message = `¡Hola MAQSYMA! Requiero cotización formal y asesoría técnica para la máquina inversora:\n\n*Modelo:* ${model}\n*Aplicación/Uso:* ${usage}\n*Ubicación:* ${city}\n*Moneda de preferencia:* ${currentCurrency}\n\n¿Tienen disponibilidad para entrega y soporte de garantía?`;
+
+      window.open(`https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
     });
   }
 
-  // 7. Navbar Scroll State
-  function initNavbarBehavior() {
-    const nav = document.querySelector('.nav-container');
-    if (!nav) return;
+  // Expose to window for inline onclick handlers
+  window.MAQSYMA = {
+    addToCart,
+    updateQty,
+    removeFromCart,
+    openCartDrawer,
+    closeCartDrawer,
+    checkoutWhatsApp,
+    openSpecModal,
+    closeSpecModal,
+    openAdminModal,
+    closeAdminModal,
+    updateProductStock,
+    updateProductPriceUSD,
+    updateProductPricePEN,
+    deleteProduct,
+    addNewProductFromAdmin,
+    resetDefaultCatalog,
+    setCurrency
+  };
 
+  // 11. Initialization on DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', () => {
+    initHeroScrollSequence();
+    loadProducts();
+    loadCart();
+    initWhatsAppDirectForm();
+
+    // Currency Switcher Buttons
+    document.querySelectorAll('.currency-btn').forEach(btn => {
+      btn.addEventListener('click', () => setCurrency(btn.dataset.currency));
+    });
+
+    // Category Tabs Filter
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeFilter = tab.getAttribute('data-filter') || 'all';
+        renderCatalog();
+      });
+    });
+
+    // Search Input
+    const searchInput = document.getElementById('catalog-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderCatalog();
+      });
+    }
+
+    // Header Cart & Admin buttons
+    document.getElementById('btn-header-cart')?.addEventListener('click', openCartDrawer);
+    document.getElementById('btn-close-cart')?.addEventListener('click', closeCartDrawer);
+    document.getElementById('btn-header-admin')?.addEventListener('click', openAdminModal);
+    document.getElementById('btn-close-admin')?.addEventListener('click', closeAdminModal);
+    document.getElementById('btn-close-spec')?.addEventListener('click', closeSpecModal);
+
+    // Navbar Scroll Style
+    const nav = document.querySelector('.nav-container');
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 80) {
-        nav.style.background = 'rgba(6, 7, 9, 0.92)';
+      if (window.scrollY > 80 && nav) {
+        nav.style.background = 'rgba(6, 7, 9, 0.94)';
         nav.style.borderColor = 'rgba(245, 196, 0, 0.35)';
-      } else {
-        nav.style.background = 'rgba(11, 13, 17, 0.78)';
+      } else if (nav) {
+        nav.style.background = 'rgba(11, 13, 17, 0.85)';
         nav.style.borderColor = 'rgba(255, 255, 255, 0.08)';
       }
     }, { passive: true });
-  }
-
-  // Initialize all modules on DOM ready
-  document.addEventListener('DOMContentLoaded', () => {
-    initHeroScrollSequence();
-    initProductTabs();
-    initWhatsAppConfigurator();
-    initAnchorLinks();
-    initNavbarBehavior();
   });
 
 })();
