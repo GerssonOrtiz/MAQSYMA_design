@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso Administrador | MAQSYMA Industrial</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--color-obsidian);
+      padding: 24px;
+      position: relative;
+    }
+    .admin-auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-metal-800);
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      position: relative;
+      z-index: 10;
+    }
+    .admin-auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .admin-auth-header img {
+      height: 48px;
+      margin-bottom: 16px;
+    }
+    .admin-auth-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-white);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-family: var(--font-display);
+    }
+    .admin-auth-sub {
+      font-size: 13px;
+      color: var(--color-metal-400);
+      margin-top: 6px;
+    }
+    .auth-error-msg {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .auth-back-link {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      color: var(--color-metal-400);
+      font-size: 13px;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .auth-back-link:hover {
+      color: var(--color-esab-yellow);
+    }
+  </style>
+</head>
+<body class="admin-auth-page">
+  <div class="admin-auth-card">
+    <div class="admin-auth-header">
+      <img src="assets/branding/maqsyma-logo.png" alt="MAQSYMA Industrial">
+      <h1 class="admin-auth-title">Acceso de Administración</h1>
+      <p class="admin-auth-sub">Control de inventario, stock y listas de precios</p>
+    </div>
+
+    <div id="authError" class="auth-error-msg" role="alert" aria-live="assertive"></div>
+
+    <form id="adminLoginForm" novalidate>
+      <div class="form-group" style="margin-bottom: 20px;">
+        <label for="adminEmail" class="form-label" style="display: block; margin-bottom: 8px; color: var(--color-metal-200); font-size: 13px;">Correo Corporativo</label>
+        <input type="email" id="adminEmail" name="email" class="form-input" style="width: 100%; box-sizing: border-box;" required autocomplete="username" placeholder="admin@maqsyma.com">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label for="adminPassword" class="form-label" style="display: block; margin-bottom: 8px; color: var(--color-metal-200); font-size: 13px;">Contraseña de Seguridad</label>
+        <input type="password" id="adminPassword" name="password" class="form-input" style="width: 100%; box-sizing: border-box;" required autocomplete="current-password" placeholder="••••••••••••">
+      </div>
+
+      <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px;">
+        <span class="btn-text">Ingresar al Sistema</span>
+      </button>
+    </form>
+
+    <a href="index.html" class="auth-back-link">← Volver al sitio público de MAQSYMA</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Si ya hay sesión activa, redirigir directo a index con panel abierto
+      try {
+        const check = await fetch('/api/auth/session');
+        const data = await check.json();
+        if (data.authenticated) {
+          window.location.href = 'index.html?admin=open';
+          return;
+        }
+      } catch (e) {}
+
+      const form = document.getElementById('adminLoginForm');
+      const errorEl = document.getElementById('authError');
+      const btn = document.getElementById('loginBtn');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value;
+
+        if (!email || !password) {
+          errorEl.textContent = 'Por favor complete todos los campos';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.querySelector('.btn-text').textContent = 'Verificando credenciales...';
+
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            errorEl.textContent = data.error || 'Credenciales inválidas. Intente nuevamente.';
+            errorEl.style.display = 'block';
+            btn.disabled = false;
+            btn.querySelector('.btn-text').textContent = 'Ingresar al Sistema';
+            return;
+          }
+
+          // Redirección exitosa con sesión en cookie
+          window.location.href = 'index.html?admin=open';
+        } catch (err) {
+          errorEl.textContent = 'Error de conexión con el servidor de autenticación.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          btn.querySelector('.btn-text').textContent = 'Ingresar al Sistema';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

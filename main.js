@@ -183,21 +183,20 @@
 
   // 4. Products & Inventory Engine
   async function loadProducts() {
-    const saved = localStorage.getItem(CONFIG.storageKeyProducts);
-    if (saved) {
-      try {
-        products = JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing stored products', e);
-      }
-    }
-    if (!products || products.length === 0) {
-      try {
-        const resp = await fetch('data/products.json');
+    try {
+      const resp = await fetch('/api/products');
+      if (resp.ok) {
         products = await resp.json();
-        saveProducts();
+      } else {
+        throw new Error('API response not ok');
+      }
+    } catch (apiErr) {
+      console.warn('Cargando catálogo desde data/products.json local:', apiErr.message);
+      try {
+        const localResp = await fetch('data/products.json');
+        products = await localResp.json();
       } catch (err) {
-        console.warn('Fallback products loaded from local template');
+        console.error('Error al cargar productos fallback:', err);
       }
     }
     renderCatalog();
@@ -205,7 +204,10 @@
   }
 
   function saveProducts() {
-    localStorage.setItem(CONFIG.storageKeyProducts, JSON.stringify(products));
+    // Modo offline/cache local opcional
+    try {
+      localStorage.setItem(CONFIG.storageKeyProducts, JSON.stringify(products));
+    } catch (e) {}
   }
 
   function formatPrice(usd, pen) {
@@ -411,6 +413,22 @@
         ? `S/. ${totalSumPEN.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`
         : `$ ${totalSumUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
     }
+
+    // Validación segura en servidor
+    fetch('/api/cart/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: cart, currency: currentCurrency })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.summary && totalElem) {
+          totalElem.textContent = currentCurrency === 'PEN'
+            ? `S/. ${data.summary.totalPEN.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`
+            : `$ ${data.summary.totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+        }
+      })
+      .catch(() => {});
   }
 
   function checkoutWhatsApp() {
@@ -515,8 +533,36 @@
     if (modal) modal.classList.remove('active');
   }
 
-  // 7. Inventory & Stock Admin Panel (Direct without login)
-  function openAdminModal() {
+  // 7. Inventory & Stock Admin Panel (Protected by Server Session)
+  let currentAdminUser = null;
+
+  async function checkAdminSession() {
+    try {
+      const res = await fetch('/api/auth/session');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated) {
+          currentAdminUser = data.user;
+          return true;
+        }
+      }
+    } catch (e) {}
+    currentAdminUser = null;
+    return false;
+  }
+
+  async function openAdminModal() {
+    const isAuthed = await checkAdminSession();
+    if (!isAuthed) {
+      window.location.href = 'admin-login.html';
+      return;
+    }
+
+    const badge = document.getElementById('admin-user-badge');
+    if (badge && currentAdminUser) {
+      badge.textContent = `Sesión activa: ${currentAdminUser.email}`;
+    }
+
     renderAdminTable();
     const modal = document.getElementById('admin-modal-overlay');
     if (modal) modal.classList.add('active');
@@ -525,6 +571,18 @@
   function closeAdminModal() {
     const modal = document.getElementById('admin-modal-overlay');
     if (modal) modal.classList.remove('active');
+  }
+
+  async function handleAdminLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
+    currentAdminUser = null;
+    closeAdminModal();
+    showToast('Sesión cerrada');
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 500);
   }
 
   function renderAdminTable() {
@@ -547,47 +605,126 @@
     }).join('');
   }
 
-  function updateProductStock(id, newStock) {
-    const p = products.find(prod => prod.id === id);
-    if (p) {
-      p.stock = Math.max(0, parseInt(newStock) || 0);
-      saveProducts();
+  async function updateProductStock(id, newStock) {
+    const val = parseInt(newStock, 10);
+    if (isNaN(val) || val < 0) {
+      alert('El stock debe ser un entero mayor o igual a 0');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, stock: val })
+      });
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert('Sesión expirada. Por favor inicie sesión nuevamente.');
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        throw new Error('Error al actualizar en servidor');
+      }
+      const data = await res.json();
+      const p = products.find(prod => prod.id === id);
+      if (p) p.stock = val;
       renderCatalog();
-      showToast(`Stock actualizado para ${p.name}: ${p.stock}`);
+      showToast(`Stock actualizado en servidor: ${val}`);
+    } catch (err) {
+      console.error(err);
+      showToast('Error al conectar con el servidor');
     }
   }
 
-  function updateProductPriceUSD(id, newPrice) {
-    const p = products.find(prod => prod.id === id);
-    if (p) {
-      p.priceUSD = Math.max(0, parseFloat(newPrice) || 0);
-      saveProducts();
+  async function updateProductPriceUSD(id, newPrice) {
+    const val = parseFloat(newPrice);
+    if (isNaN(val) || val < 0) {
+      alert('Precio USD inválido');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, priceUSD: val })
+      });
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        throw new Error('Error al actualizar');
+      }
+      const p = products.find(prod => prod.id === id);
+      if (p) p.priceUSD = val;
       renderCatalog();
-      showToast(`Precio USD actualizado: $${p.priceUSD}`);
+      showToast(`Precio USD actualizado: $${val}`);
+    } catch (err) {
+      showToast('Error al actualizar precio en servidor');
     }
   }
 
-  function updateProductPricePEN(id, newPrice) {
-    const p = products.find(prod => prod.id === id);
-    if (p) {
-      p.pricePEN = Math.max(0, parseFloat(newPrice) || 0);
-      saveProducts();
+  async function updateProductPricePEN(id, newPrice) {
+    const val = parseFloat(newPrice);
+    if (isNaN(val) || val < 0) {
+      alert('Precio PEN inválido');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, pricePEN: val })
+      });
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        throw new Error('Error al actualizar');
+      }
+      const p = products.find(prod => prod.id === id);
+      if (p) p.pricePEN = val;
       renderCatalog();
-      showToast(`Precio PEN actualizado: S/.${p.pricePEN}`);
+      showToast(`Precio PEN actualizado: S/.${val}`);
+    } catch (err) {
+      showToast('Error al actualizar precio en servidor');
     }
   }
 
-  function deleteProduct(id) {
-    if (confirm('¿Confirmas que deseas eliminar este equipo del catálogo?')) {
+  async function deleteProduct(id) {
+    if (!confirm('¿Confirmas que deseas eliminar este equipo del catálogo en servidor?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        throw new Error('Error eliminando producto');
+      }
+
       products = products.filter(p => p.id !== id);
-      saveProducts();
       renderAdminTable();
       renderCatalog();
       showToast('Equipo eliminado del catálogo');
+    } catch (err) {
+      showToast('Error al eliminar equipo en el servidor');
     }
   }
 
-  function addNewProductFromAdmin() {
+  async function addNewProductFromAdmin() {
     const name = document.getElementById('new-prod-name')?.value.trim();
     const cat = document.getElementById('new-prod-category')?.value;
     const catLabel = document.getElementById('new-prod-label')?.value.trim() || cat.toUpperCase();
@@ -604,9 +741,7 @@
       return;
     }
 
-    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const newProduct = {
-      id,
+    const payload = {
       name,
       category: cat,
       categoryLabel: catLabel,
@@ -628,14 +763,32 @@
       ]
     };
 
-    products.unshift(newProduct);
-    saveProducts();
-    renderAdminTable();
-    renderCatalog();
-    showToast(`¡Equipo ${name} añadido con éxito!`);
+    try {
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    // Reset fields
-    document.getElementById('adminAddForm').reset();
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = 'admin-login.html';
+          return;
+        }
+        const errData = await res.json();
+        alert(errData.error || 'Error creando producto');
+        return;
+      }
+
+      const created = await res.json();
+      products.unshift(created.product);
+      renderAdminTable();
+      renderCatalog();
+      showToast(`¡Equipo ${name} publicado en servidor con éxito!`);
+      document.getElementById('adminAddForm').reset();
+    } catch (err) {
+      showToast('Error de comunicación con el servidor');
+    }
   }
 
   function resetDefaultCatalog() {
@@ -715,12 +868,12 @@
     closeSpecModal,
     openAdminModal,
     closeAdminModal,
+    handleAdminLogout,
     updateProductStock,
     updateProductPriceUSD,
     updateProductPricePEN,
     deleteProduct,
     addNewProductFromAdmin,
-    resetDefaultCatalog,
     setCurrency
   };
 
@@ -730,6 +883,16 @@
     loadProducts();
     loadCart();
     initWhatsAppDirectForm();
+
+    // Comprobar parámetro ?admin=open tras login exitoso
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'open') {
+      openAdminModal();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Botón logout del admin
+    document.getElementById('btn-admin-logout')?.addEventListener('click', handleAdminLogout);
 
     // Currency Switcher Buttons
     document.querySelectorAll('.currency-btn').forEach(btn => {
