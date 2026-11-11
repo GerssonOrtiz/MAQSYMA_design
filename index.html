@@ -69,132 +69,146 @@
   <main id="main-content">
 
     <!-- ====================================================================
-         HERO: 500VH CINEMATIC SCRUBBED SEQUENCE
-         Controlled via GSAP ScrollTrigger (No Scroll Locking)
+         HERO: 500VH CINEMATIC SCROLLYTELLING SEQUENCE (5 ESCENAS MAQSYMA + ESAB)
+         Controlled via GSAP ScrollTrigger Scrub
          ==================================================================== -->
-    <section class="hero-scroll-container" id="experiencia" aria-label="Secuencia Cinematográfica de Soldadura ESAB">
+    <section class="hero-scroll-container" id="experiencia" aria-label="Experiencia Cinematográfica Industrial MAQSYMA">
       <div class="hero-viewport">
 
-        <!-- Background Scene Elements -->
-        <div class="hero-backdrop-scene" aria-hidden="true">
-          <div class="hero-grid-mesh"></div>
-        </div>
-
-        <!-- Volumetric Arc Flare -->
-        <div class="volumetric-arc-light" aria-hidden="true"></div>
-
-        <!-- Cinematic Video Engine Stage (5 Scenes Sequence) -->
+        <!-- Stage de Video Cinematográfico (5 Escenas continuas con posters WebP) -->
         <div class="hero-cinematic-stage" id="heroCinematicStage" aria-hidden="true">
-          <!-- Escena 1: Scrub con Scroll -->
-          <video class="cinematic-video" id="cineVideo1" muted playsinline preload="auto">
-            <source src="assets/cinematic/escena1.mp4" type="video/mp4">
-          </video>
-          <!-- Escena 2: Video continuo con pausa al final -->
-          <video class="cinematic-video" id="cineVideo2" muted playsinline preload="auto">
-            <source src="assets/cinematic/escena2.mp4" type="video/mp4">
-          </video>
-          <!-- Escena 3: Scrub con Scroll -->
-          <video class="cinematic-video" id="cineVideo3" muted playsinline preload="auto">
-            <source src="assets/cinematic/escena3.mp4" type="video/mp4">
-          </video>
-          <!-- Escena 4: Preparada para panorama de equipos ESAB -->
-          <div class="cinematic-layer" id="cineScene4">
-            <img src="assets/cinematic/equipos.png" alt="Panorama Equipos ESAB" class="cinematic-fallback-img">
+          <!-- Escena 01: The Industrial Awakening -->
+          <div class="cinematic-scene-panel" id="scenePanel1" data-scene="1">
+            <img src="assets/cinematic/poster-01.webp" alt="The Industrial Awakening Poster" class="cinematic-poster" id="poster1">
+            <video class="cinematic-video" id="cineVideo1" muted playsinline preload="auto" poster="assets/cinematic/poster-01.webp">
+              <source src="assets/cinematic/video-01-awakening.mp4" type="video/mp4">
+            </video>
           </div>
-          <!-- Escena 5: Preparada para logo MAQSYMA -->
-          <div class="cinematic-layer" id="cineScene5">
-            <img src="assets/cinematic/maqsyma.jpg" alt="MAQSYMA Industrial" class="cinematic-fallback-img">
+
+          <!-- Escena 02: The Power of ESAB -->
+          <div class="cinematic-scene-panel" id="scenePanel2" data-scene="2">
+            <img src="assets/cinematic/poster-02.webp" alt="The Power of ESAB Poster" class="cinematic-poster" id="poster2">
+            <video class="cinematic-video" id="cineVideo2" muted playsinline preload="none" poster="assets/cinematic/poster-02.webp">
+              <source src="assets/cinematic/video-02-esab-power.mp4" type="video/mp4">
+            </video>
           </div>
-          <div class="cinematic-vignette"></div>
+
+          <!-- Escena 03: Engineered to Perform -->
+          <div class="cinematic-scene-panel" id="scenePanel3" data-scene="3">
+            <img src="assets/cinematic/poster-03.webp" alt="Engineered to Perform Poster" class="cinematic-poster" id="poster3">
+            <video class="cinematic-video" id="cineVideo3" muted playsinline preload="none" poster="assets/cinematic/poster-03.webp">
+              <source src="assets/cinematic/video-03-welding-action.mp4" type="video/mp4">
+            </video>
+          </div>
+
+          <!-- Escena 04: Industrial Solutions -->
+          <div class="cinematic-scene-panel" id="scenePanel4" data-scene="4">
+            <img src="assets/cinematic/poster-04.webp" alt="Industrial Solutions Poster" class="cinematic-poster" id="poster4">
+            <video class="cinematic-video" id="cineVideo4" muted playsinline preload="none" poster="assets/cinematic/poster-04.webp">
+              <source src="assets/cinematic/video-04-industrial-solutions.mp4" type="video/mp4">
+            </video>
+          </div>
+
+          <!-- Escena 05: Built for Industry -->
+          <div class="cinematic-scene-panel" id="scenePanel5" data-scene="5">
+            <img src="assets/cinematic/poster-05.webp" alt="Built for Industry Poster" class="cinematic-poster" id="poster5">
+            <video class="cinematic-video" id="cineVideo5" muted playsinline preload="none" poster="assets/cinematic/poster-05.webp">
+              <source src="assets/cinematic/video-05-built-for-industry.mp4" type="video/mp4">
+            </video>
+          </div>
+
+          <!-- Capas de efectos cinematográficos y transiciones ópticas -->
+          <div class="cinematic-light-beam" id="cinematicLightBeam" aria-hidden="true"></div>
+          <div class="cinematic-electric-flash" id="cinematicElectricFlash" aria-hidden="true"></div>
+          <div class="cinematic-vignette" aria-hidden="true"></div>
+          <div class="cinematic-fade-black" id="cinematicFadeBlack" aria-hidden="true"></div>
         </div>
 
-        <!-- Real Welder Action Silhouette (Extracted from Original Reference Poster) with Responsive <picture> -->
-        <div class="hero-welder-backdrop" aria-hidden="true">
-          <picture>
-            <source media="(max-width: 768px)" srcset="assets/cinematic/welder-cinematic-mobile.webp" type="image/webp">
-            <source srcset="assets/cinematic/welder-cinematic.webp" type="image/webp">
-            <img src="assets/cinematic/welder-cinematic.png" alt="Arco de soldadura en taller industrial" width="991" height="658" fetchpriority="high">
-          </picture>
-        </div>
-
-        <!-- Realtime Physics Sparks Canvas -->
-        <canvas id="sparksCanvas" aria-hidden="true"></canvas>
-
-        <!-- Product Stage: Authentic ESAB Equipment Cutouts -->
-        <div class="hero-product-stage">
-          <div class="machine-hero-wrapper">
-            <img src="assets/products/esab_hero_clean.png" alt="Máquina de soldadura inversora ESAB Rebel / Rogue industrial de alta precisión" class="machine-hero-img">
-
-            <!-- Interactive HUD Hotspots -->
-            <div class="machine-hotspots" aria-hidden="true">
-              <div class="hotspot-tag hotspot-1">
-                <span>PFC POWER FACTOR</span>
-              </div>
-              <div class="hotspot-tag hotspot-2">
-                <span>sMIG INTELIGENTE</span>
-              </div>
-              <div class="hotspot-tag hotspot-3">
-                <span>CHASIS IP23S INDUSTRIAL</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Cinematic Narrative Overlays (Driven by Scroll Progress) -->
+        <!-- Overlays Narrativos Cinemáticos (Tipografía HTML/CSS sincronizada con Scroll) -->
         <div class="hero-narrative-overlay">
 
-          <!-- Slide 1: Ignition -->
-          <article class="narrative-slide active-events" id="slide-intro">
-            <span class="slide-badge">01 // IGNICIÓN DEL ARCO</span>
-            <h1 class="narrative-title">EL PODER DE LA <span class="highlight-yellow">SOLDADURA PURA</span></h1>
-            <p class="narrative-desc">Donde la energía se convierte en fusión perfecta. Control dinámico milimétrico del arco para los entornos de manufactura más exigentes.</p>
+          <!-- Escena 1 -->
+          <article class="narrative-slide active-events" id="slide-01">
+            <span class="slide-badge">01 // AWAKENING</span>
+            <h1 class="narrative-title">THE INDUSTRIAL <span class="highlight-yellow">AWAKENING</span></h1>
+            <p class="narrative-desc">EL PODER DE LA INDUSTRIA.</p>
+          </article>
+
+          <!-- Escena 2 -->
+          <article class="narrative-slide" id="slide-02">
+            <span class="slide-badge">02 // INGENIERÍA</span>
+            <h2 class="narrative-title">THE POWER <span class="highlight-yellow">OF ESAB</span></h2>
+            <p class="narrative-desc">TECNOLOGÍA PARA CADA DESAFÍO.</p>
+          </article>
+
+          <!-- Escena 3 -->
+          <article class="narrative-slide" id="slide-03">
+            <span class="slide-badge">03 // RENDIMIENTO</span>
+            <h2 class="narrative-title">ENGINEERED <span class="highlight-yellow">TO PERFORM</span></h2>
+            <p class="narrative-desc">PRECISIÓN EN CADA SOLDADURA.</p>
+          </article>
+
+          <!-- Escena 4 -->
+          <article class="narrative-slide" id="slide-04">
+            <span class="slide-badge">04 // CATÁLOGO PROFESIONAL</span>
+            <h2 class="narrative-title">INDUSTRIAL <span class="highlight-yellow">SOLUTIONS</span></h2>
+            <p class="narrative-desc">SOLUCIONES PARA PROFESIONALES.</p>
+          </article>
+
+          <!-- Escena 5 & Brand Reveal -->
+          <article class="narrative-slide" id="slide-05">
+            <div class="brand-reveal-badge">
+              <img src="assets/cinematic/logo-maqsyma.svg" alt="MAQSYMA Logo" class="brand-reveal-logo" width="260" height="64" onerror="this.src='assets/branding/maqsyma-logo.png'">
+            </div>
+            <span class="slide-badge">05 // FABRICACIÓN PESADA</span>
+            <h2 class="narrative-title">BUILT FOR <span class="highlight-yellow">INDUSTRY</span></h2>
+            <p class="narrative-desc">MAQSYMA. SOLUCIONES EN SOLDADURA.</p>
             <div class="hero-cta-group">
-              <a href="#catalogo" class="btn-primary-esab">Comprar & Cotizar</a>
+              <a href="#catalogo" class="btn-primary-esab">Explorar Catálogo ESAB</a>
               <a href="#cotizaciones" class="btn-secondary-metal">Asesoría WhatsApp</a>
             </div>
           </article>
 
-          <!-- Slide 2: Inverter Reveal -->
-          <article class="narrative-slide" id="slide-machine">
-            <span class="slide-badge">02 // INGENIERÍA ESAB</span>
-            <h2 class="narrative-title">TECNOLOGÍA <span class="highlight-yellow">INVERTER ÉLITE</span></h2>
-            <p class="narrative-desc">Consistencia inquebrantable. Las máquinas inversoras ESAB ofrecen estabilidad extrema ante fluctuaciones de red y extensiones de hasta 100 metros.</p>
-          </article>
-
-          <!-- Slide 3: Technical Details -->
-          <article class="narrative-slide" id="slide-details">
-            <span class="slide-badge">03 // MICRO-CONTROL DIGITAL</span>
-            <h2 class="narrative-title">PRECISIÓN EN <span class="highlight-yellow">CADA CORDÓN</span></h2>
-            <p class="narrative-desc">Ciclos de trabajo industriales al 100%, sistema multiproceso MIG/MAG, TIG Lift y electrodo revestido con micro-ajuste digital de inductancia.</p>
-          </article>
-
-          <!-- Slide 4: MAQSYMA Authority -->
-          <article class="narrative-slide active-events" id="slide-brand">
-            <span class="slide-badge">04 // TIENDA OFICIAL MAQSYMA</span>
-            <h2 class="narrative-title">MAQSYMA <span class="highlight-yellow">+ ESAB</span></h2>
-            <p class="narrative-desc">Equipos originales en stock inmediato, facturación formal, soporte técnico y atención por WhatsApp directo al +51 957 082 739.</p>
-            <div class="hero-cta-group">
-              <a href="#catalogo" class="btn-primary-esab">Ver Tienda Completa</a>
-              <button class="btn-secondary-metal" onclick="window.MAQSYMA.openCartDrawer()">Abrir Carrito</button>
-            </div>
-          </article>
-
         </div>
 
-        <!-- Telemetry Progress Bar -->
-        <div class="scroll-telemetry" aria-hidden="true">
-          <span class="scroll-indicator-mouse">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="7"></rect>
-              <line x1="12" y1="6" x2="12" y2="10"></line>
-            </svg>
-            SCROLL SCENE
-          </span>
-          <div class="telemetry-bar-wrap">
-            <div class="telemetry-bar-fill"></div>
+        <!-- Indicador de Progreso Cinemático Elegante (5 Escenas) -->
+        <nav class="cinematic-progress-hud" aria-label="Progreso Cinemático">
+          <div class="hud-timeline-track">
+            <div class="hud-progress-fill" id="hudProgressFill"></div>
           </div>
-          <span id="telemetry-step">01 / IGNICIÓN ARCO</span>
-        </div>
+          <div class="hud-scenes-indicators">
+            <button class="hud-step-pill active" data-target-scene="1">
+              <span class="step-num">01</span>
+              <span class="step-name">AWAKENING</span>
+            </button>
+            <button class="hud-step-pill" data-target-scene="2">
+              <span class="step-num">02</span>
+              <span class="step-name">POWER OF ESAB</span>
+            </button>
+            <button class="hud-step-pill" data-target-scene="3">
+              <span class="step-num">03</span>
+              <span class="step-name">PERFORM</span>
+            </button>
+            <button class="hud-step-pill" data-target-scene="4">
+              <span class="step-num">04</span>
+              <span class="step-name">SOLUTIONS</span>
+            </button>
+            <button class="hud-step-pill" data-target-scene="5">
+              <span class="step-num">05</span>
+              <span class="step-name">BUILT FOR INDUSTRY</span>
+            </button>
+          </div>
+          <div class="hud-current-status">
+            <span class="hud-scroll-hint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="7"></rect>
+                <line x1="12" y1="6" x2="12" y2="10"></line>
+              </svg>
+              SCROLL NARRATIVE
+            </span>
+            <span class="hud-active-label" id="hudActiveLabel">01 // THE INDUSTRIAL AWAKENING</span>
+          </div>
+        </nav>
 
       </div>
     </section>

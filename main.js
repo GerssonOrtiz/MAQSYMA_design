@@ -120,364 +120,318 @@
   });
 
   // =========================================================================
-  // 2. Sprites Precalculados para Chispas (Cero gradientes ni shadowBlur en loop)
+  // 3. Cinematic Video Scrollytelling Engine (5 Escenas - MAQSYMA + ESAB)
   // =========================================================================
-  const sparkSpriteCanvas = document.createElement('canvas');
-  const sparkSpriteCtx = sparkSpriteCanvas.getContext('2d');
-  sparkSpriteCanvas.width = 48;
-  sparkSpriteCanvas.height = 16;
+  const scenePanels = [
+    document.getElementById('scenePanel1'),
+    document.getElementById('scenePanel2'),
+    document.getElementById('scenePanel3'),
+    document.getElementById('scenePanel4'),
+    document.getElementById('scenePanel5')
+  ];
 
-  // Dibujar 3 sprites de 16x16: Amarillo ESAB, Blanco Arco, Celeste Ionizado
-  function initSparkSprites() {
-    if (!sparkSpriteCtx) return;
-    const colors = ['#F5C400', '#FFFFFF', '#70D6FF'];
-    colors.forEach((col, idx) => {
-      const cx = idx * 16 + 8;
-      const cy = 8;
-      sparkSpriteCtx.fillStyle = col;
-      sparkSpriteCtx.beginPath();
-      sparkSpriteCtx.arc(cx, cy, 5, 0, Math.PI * 2);
-      sparkSpriteCtx.fill();
-    });
-  }
-  initSparkSprites();
+  const videos = [
+    document.getElementById('cineVideo1'),
+    document.getElementById('cineVideo2'),
+    document.getElementById('cineVideo3'),
+    document.getElementById('cineVideo4'),
+    document.getElementById('cineVideo5')
+  ];
 
-  // 3. High-Performance Sparks Canvas
-  const canvas = document.getElementById('sparksCanvas');
-  const ctx = canvas ? canvas.getContext('2d', { alpha: true }) : null;
-  let sparks = [];
-  let sparksIntensity = 0;
-  let sparksRafId = null;
-  let isHeroVisible = true;
-  let isPageVisible = !document.hidden;
+  const posters = [
+    document.getElementById('poster1'),
+    document.getElementById('poster2'),
+    document.getElementById('poster3'),
+    document.getElementById('poster4'),
+    document.getElementById('poster5')
+  ];
 
-  // Límite de devicePixelRatio según tier
-  function getMaxDPR() {
-    if (deviceTier === 'bajo') return 1;
-    if (deviceTier === 'medio' || isMobileDevice) return 1;
-    return Math.min(window.devicePixelRatio || 1, 1.75);
-  }
+  const slides = [
+    document.getElementById('slide-01'),
+    document.getElementById('slide-02'),
+    document.getElementById('slide-03'),
+    document.getElementById('slide-04'),
+    document.getElementById('slide-05')
+  ];
 
-  function getMaxSparks() {
-    if (deviceTier === 'bajo') return 0;
-    if (deviceTier === 'medio') return 45; // 25-35% de partículas
-    return 180;
-  }
+  const hudPills = document.querySelectorAll('.hud-step-pill');
+  const hudProgressFill = document.getElementById('hudProgressFill');
+  const hudActiveLabel = document.getElementById('hudActiveLabel');
+  const lightBeam = document.getElementById('cinematicLightBeam');
+  const electricFlash = document.getElementById('cinematicElectricFlash');
+  const fadeBlack = document.getElementById('cinematicFadeBlack');
 
-  function resizeCanvas() {
-    if (!canvas || deviceTier === 'bajo') return;
-    const dpr = getMaxDPR();
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
+  const sceneLabels = [
+    '01 // THE INDUSTRIAL AWAKENING',
+    '02 // THE POWER OF ESAB',
+    '03 // ENGINEERED TO PERFORM',
+    '04 // INDUSTRIAL SOLUTIONS',
+    '05 // BUILT FOR INDUSTRY'
+  ];
 
-  let resizeTimeout = null;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      evaluateDeviceCapability();
-      resizeCanvas();
-      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
-    }, 200);
-  }, { passive: true });
-  resizeCanvas();
+  // Configuración de buffering, fast seeking y lazy-loading progresivo
+  const videoLoadedState = [false, false, false, false, false];
 
-  class Spark {
-    constructor(x, y, burst = false) {
-      this.reset(x, y, burst);
-    }
-    reset(x, y, burst) {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      this.x = x || w / 2;
-      this.y = y || h * 0.52;
-      const angle = (Math.random() * Math.PI * 2);
-      const speed = burst ? (Math.random() * 11 + 3) : (Math.random() * 6 + 2);
-      this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - (Math.random() * 3 + 1);
-      this.gravity = 0.28;
-      this.drag = 0.95;
-      this.life = 0;
-      this.maxLife = Math.random() * 28 + 16;
-      this.size = Math.random() * 2.2 + 0.8;
-
-      const r = Math.random();
-      if (r < 0.6) this.spriteIndex = 0; // Amarillo
-      else if (r < 0.85) this.spriteIndex = 1; // Blanco
-      else this.spriteIndex = 2; // Celeste
-    }
-    update() {
-      this.vx *= this.drag;
-      this.vy = (this.vy + this.gravity) * this.drag;
-      this.x += this.vx;
-      this.y += this.vy;
-      this.life++;
-    }
-    draw(context) {
-      const remaining = 1 - (this.life / this.maxLife);
-      if (remaining <= 0) return;
-      context.globalAlpha = remaining;
-
-      // Dibujo optimizado por sprite precalculado (sin shadowBlur ni recalculación de gradientes)
-      const sx = this.spriteIndex * 16;
-      const dSize = this.size * remaining * 2.4;
-      context.drawImage(
-        sparkSpriteCanvas,
-        sx, 0, 16, 16,
-        this.x - dSize / 2, this.y - dSize / 2, dSize, dSize
-      );
-    }
-  }
-
-  function loopSparks() {
-    if (!ctx || !canvas || deviceTier === 'bajo' || prefersReducedMotion || !isHeroVisible || !isPageVisible) {
-      sparksRafId = null;
-      return;
-    }
-
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-    if (sparksIntensity > 0.05) {
-      const factor = deviceTier === 'medio' ? 1.8 : 4.5;
-      const count = Math.floor(sparksIntensity * factor);
-      const maxSparks = getMaxSparks();
-      for (let i = 0; i < count; i++) {
-        if (sparks.length < maxSparks) sparks.push(new Spark());
-      }
-    }
-
-    for (let i = sparks.length - 1; i >= 0; i--) {
-      const s = sparks[i];
-      s.update();
-      s.draw(ctx);
-      if (s.life >= s.maxLife) sparks.splice(i, 1);
-    }
-
-    sparksRafId = requestAnimationFrame(loopSparks);
-  }
-
-  // Pausar y reanudar al cambiar pestaña
-  document.addEventListener('visibilitychange', () => {
-    isPageVisible = !document.hidden;
-    if (isPageVisible && isHeroVisible && !sparksRafId && deviceTier !== 'bajo' && !prefersReducedMotion) {
-      loopSparks();
-    }
-  });
-
-  // Pausar partículas mediante IntersectionObserver cuando el Hero sale de pantalla
-  const heroSection = document.querySelector('.hero-scroll-container');
-  if (heroSection && 'IntersectionObserver' in window) {
-    const heroObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        isHeroVisible = entry.isIntersecting;
-        if (isHeroVisible && isPageVisible && !sparksRafId && deviceTier !== 'bajo' && !prefersReducedMotion) {
-          loopSparks();
-        }
-      });
-    }, { threshold: 0.05 });
-    heroObserver.observe(heroSection);
-  }
-
-  if (!prefersReducedMotion && deviceTier !== 'bajo') loopSparks();
-
-  // =========================================================================
-  // 3. Cinematic Video Engine (5 Escenas: Scrub 1 y 3, Autoplay continuo 2)
-  // =========================================================================
-  const v1 = document.getElementById('cineVideo1');
-  const v2 = document.getElementById('cineVideo2');
-  const v3 = document.getElementById('cineVideo3');
-  const s4 = document.getElementById('cineScene4');
-  const s5 = document.getElementById('cineScene5');
-
-  // Asegurar metadata y carga inicial para control de currentTime
-  [v1, v2, v3].forEach((v) => {
+  function setupVideo(idx) {
+    const v = videos[idx];
     if (!v) return;
     v.muted = true;
     v.playsInline = true;
     v.setAttribute('muted', '');
     v.setAttribute('playsinline', '');
-    v.load();
-  });
 
-  // Escena 2: Autoplay con parada automática en el último fotograma
-  let scene2HasPlayed = false;
-  if (v2) {
-    v2.addEventListener('ended', () => {
-      v2.pause();
-    });
-    // Guardia de seguridad para pausar en el último fotograma exacto
-    v2.addEventListener('timeupdate', () => {
-      if (v2.duration && v2.currentTime >= v2.duration - 0.08) {
-        v2.pause();
+    v.addEventListener('canplay', () => {
+      videoLoadedState[idx] = true;
+      if (posters[idx]) {
+        // Transición suave del poster hacia el video
+        posters[idx].style.opacity = '0';
+      }
+    }, { once: true });
+
+    v.addEventListener('error', () => {
+      console.warn(`[Cinematic] Fallback activado para video escena ${idx + 1}`);
+      if (posters[idx]) {
+        posters[idx].style.opacity = '1';
       }
     });
   }
 
-  function syncVideoScrub(video, progressNorm) {
-    if (!video || !video.duration || isNaN(video.duration)) return;
-    const clampedProgress = Math.max(0, Math.min(1, progressNorm));
-    const targetTime = clampedProgress * (video.duration - 0.04);
-    // Control suave para evitar tartamudeo en decodificación
-    if (Math.abs(video.currentTime - targetTime) > 0.03) {
-      video.currentTime = targetTime;
+  // Cargar video 1 inmediatamente
+  setupVideo(0);
+  if (videos[0]) {
+    videos[0].load();
+  }
+
+  // Pre-cargar video bajo demanda cuando el usuario se acerca a su escena
+  function preloadNextVideo(idx) {
+    if (idx >= 0 && idx < videos.length) {
+      const v = videos[idx];
+      if (v && v.preload !== 'auto') {
+        v.preload = 'auto';
+        setupVideo(idx);
+        v.load();
+      }
     }
   }
 
-  // 3. Hero 500vh GSAP Scroll Sequence
+  // Estrategia de scrub optimizada con rAF y bloqueo de seeking concurrente
+  const videoSeekTargets = [0, 0, 0, 0, 0];
+  const videoSeeking = [false, false, false, false, false];
+
+  function requestVideoScrub(videoIndex, progressRatio) {
+    const v = videos[videoIndex];
+    if (!v || !v.duration || isNaN(v.duration)) return;
+
+    const target = Math.max(0, Math.min(v.duration - 0.05, progressRatio * v.duration));
+    videoSeekTargets[videoIndex] = target;
+
+    if (!videoSeeking[videoIndex]) {
+      applyPendingSeek(videoIndex);
+    }
+  }
+
+  function applyPendingSeek(index) {
+    const v = videos[index];
+    if (!v || isNaN(v.duration)) return;
+
+    const target = videoSeekTargets[index];
+    if (Math.abs(v.currentTime - target) < 0.035) return;
+
+    videoSeeking[index] = true;
+
+    // Si el navegador soporta fastSeek (ej. Safari / Firefox / WebKit)
+    if (typeof v.fastSeek === 'function') {
+      try {
+        v.fastSeek(target);
+      } catch (e) {
+        v.currentTime = target;
+      }
+    } else {
+      v.currentTime = target;
+    }
+
+    const onSeeked = () => {
+      v.removeEventListener('seeked', onSeeked);
+      videoSeeking[index] = false;
+      // Si el objetivo varió mientras se buscaba, aplicar el último objetivo acumulado
+      if (Math.abs(v.currentTime - videoSeekTargets[index]) > 0.04) {
+        requestAnimationFrame(() => applyPendingSeek(index));
+      }
+    };
+    v.addEventListener('seeked', onSeeked, { once: true });
+  }
+
+  // Interacción en los pills del HUD para navegar entre escenas con suavidad
+  hudPills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const targetScene = parseInt(pill.getAttribute('data-target-scene'), 10);
+      const heroContainer = document.querySelector('.hero-scroll-container');
+      if (!heroContainer) return;
+      const startY = heroContainer.offsetTop;
+      const totalH = heroContainer.offsetHeight - window.innerHeight;
+      const targetRatio = (targetScene - 1) / 4;
+      window.scrollTo({
+        top: startY + (totalH * targetRatio),
+        behavior: 'smooth'
+      });
+    });
+  });
+
+  // 3. Orquestador Maestro GSAP ScrollTrigger para los 5 videos (25s totales)
   let heroTimeline = null;
   function initHeroScrollSequence() {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion) {
+      // Modo movimiento reducido: mostrar escena 1 y permitir navegación convencional
+      if (scenePanels[0]) {
+        scenePanels[0].style.opacity = '1';
+        scenePanels[0].style.visibility = 'visible';
+      }
+      if (slides[0]) {
+        slides[0].style.opacity = '1';
+        slides[0].style.transform = 'none';
+      }
+      return;
+    }
 
     const heroContainer = document.querySelector('.hero-scroll-container');
-    const machine = document.querySelector('.machine-hero-wrapper');
-    const arcLight = document.querySelector('.volumetric-arc-light');
-    const welderBg = document.querySelector('.hero-welder-backdrop');
-    const hotspots = document.querySelector('.machine-hotspots');
-    const telemetryFill = document.querySelector('.telemetry-bar-fill');
-    const telemetryStep = document.getElementById('telemetry-step');
+    if (!heroContainer) return;
 
-    const slide1 = document.getElementById('slide-intro');
-    const slide2 = document.getElementById('slide-machine');
-    const slide3 = document.getElementById('slide-details');
-    const slide4 = document.getElementById('slide-brand');
+    if (heroTimeline) {
+      heroTimeline.kill();
+    }
 
-    if (!heroContainer || !machine) return;
+    // Configuración inicial de todas las capas
+    scenePanels.forEach((panel) => {
+      if (panel) gsap.set(panel, { opacity: 0, visibility: 'hidden', scale: 1.0 });
+    });
+    slides.forEach((slide) => {
+      if (slide) gsap.set(slide, { opacity: 0, y: 35 });
+    });
+    if (lightBeam) gsap.set(lightBeam, { opacity: 0, x: '-60%' });
+    if (electricFlash) gsap.set(electricFlash, { opacity: 0 });
+    if (fadeBlack) gsap.set(fadeBlack, { opacity: 0 });
 
-    // Limpieza de timelines previos si existían
-    if (heroTimeline) heroTimeline.kill();
+    // Panel 1 visible al inicio
+    if (scenePanels[0]) gsap.set(scenePanels[0], { opacity: 1, visibility: 'visible' });
+    if (slides[0]) gsap.set(slides[0], { opacity: 1, y: 0 });
 
-    gsap.set([slide1, slide2, slide3, slide4], { opacity: 0, y: 40 });
-    gsap.set(machine, { opacity: 0, scale: 0.75, rotationY: isMobileDevice ? 0 : -15 });
-    gsap.set(arcLight, { opacity: 0, scale: 0.4 });
-    gsap.set(welderBg, { opacity: 0 });
-    gsap.set(hotspots, { opacity: 0 });
+    const isMobileTier = isMobileDevice || deviceTier === 'bajo';
+    const scrubIntensity = isMobileTier ? 0.35 : 0.65;
 
-    // Estado inicial capas cinemáticas
-    if (v1) gsap.set(v1, { opacity: 0 });
-    if (v2) gsap.set(v2, { opacity: 0 });
-    if (v3) gsap.set(v3, { opacity: 0 });
-    if (s4) gsap.set(s4, { opacity: 0 });
-    if (s5) gsap.set(s5, { opacity: 0 });
-
-    const isMobileOrTierBajo = isMobileDevice || deviceTier !== 'alto';
-    const scrubVal = isMobileOrTierBajo ? 0.35 : 0.8;
-    const durScale = isMobileOrTierBajo ? 0.75 : 1.0; // 0.6-0.8s en transiciones móviles
-
+    // Timeline Maestro Scrollytelling
     heroTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: heroContainer,
         start: 'top top',
         end: 'bottom bottom',
-        scrub: scrubVal,
+        scrub: scrubIntensity,
         onUpdate: (self) => {
           const p = self.progress;
-          if (telemetryFill) telemetryFill.style.width = `${(p * 100).toFixed(1)}%`;
-          if (telemetryStep) {
-            if (p < 0.22) telemetryStep.textContent = '01 / ESCENA 1: IGNICIÓN ARCO';
-            else if (p < 0.45) telemetryStep.textContent = '02 / ESCENA 2: FUSIÓN CONTINUA';
-            else if (p < 0.68) telemetryStep.textContent = '03 / ESCENA 3: MICRO-CONTROL';
-            else if (p < 0.86) telemetryStep.textContent = '04 / ESCENA 4: GAMA ESAB';
-            else telemetryStep.textContent = '05 / ESCENA 5: MAQSYMA OFICIAL';
+
+          // Progreso general HUD
+          if (hudProgressFill) {
+            hudProgressFill.style.width = `${(p * 100).toFixed(1)}%`;
           }
 
-          // === GESTIÓN DE VIDEOS SEGÚN PROGRESO DE SCROLL ===
-          // Escena 1: Scrub interactivo de 0.00 a 0.22
-          if (p <= 0.24) {
-            const v1Prog = Math.min(1, Math.max(0, p / 0.22));
-            syncVideoScrub(v1, v1Prog);
+          // Detección de escena actual (5 escenas: ~0.20 cada una)
+          let currentScene = Math.min(4, Math.floor(p / 0.20));
+          if (p >= 0.96) currentScene = 4;
+
+          hudPills.forEach((pill, idx) => {
+            pill.classList.toggle('active', idx === currentScene);
+          });
+          if (hudActiveLabel && sceneLabels[currentScene]) {
+            hudActiveLabel.textContent = sceneLabels[currentScene];
           }
 
-          // Escena 2: Reproducción continua única (se detiene al final) de 0.22 a 0.45
-          if (v2) {
-            if (p >= 0.20 && p <= 0.48) {
-              if (v2.paused && !scene2HasPlayed) {
-                const playPromise = v2.play();
-                if (playPromise !== undefined) {
-                  playPromise.catch(() => {});
-                }
-              }
-            } else if (p < 0.15) {
-              // Si el usuario rebobina completamente hacia arriba, reiniciamos la escena 2 para que vuelva a correr
-              scene2HasPlayed = false;
-              v2.pause();
-              v2.currentTime = 0;
-            } else if (p > 0.52) {
-              // Fuera de rango hacia adelante
-              v2.pause();
-            }
+          // Precarga anticipada del siguiente video (1 escena antes)
+          if (currentScene < 4) {
+            preloadNextVideo(currentScene + 1);
           }
 
-          // Escena 3: Scrub interactivo de 0.45 a 0.70
-          if (p >= 0.42 && p <= 0.74) {
-            const v3Prog = Math.min(1, Math.max(0, (p - 0.45) / 0.23));
-            syncVideoScrub(v3, v3Prog);
+          // Sincronización Scrub Frame-by-Frame para cada video según su rango
+          // Escena 1: [0.00 -> 0.20]
+          if (p < 0.22) {
+            const ratio = Math.max(0, Math.min(1, p / 0.20));
+            requestVideoScrub(0, ratio);
+          }
+          // Escena 2: [0.20 -> 0.40]
+          if (p >= 0.18 && p < 0.42) {
+            const ratio = Math.max(0, Math.min(1, (p - 0.20) / 0.20));
+            requestVideoScrub(1, ratio);
+          }
+          // Escena 3: [0.40 -> 0.60]
+          if (p >= 0.38 && p < 0.62) {
+            const ratio = Math.max(0, Math.min(1, (p - 0.40) / 0.20));
+            requestVideoScrub(2, ratio);
+          }
+          // Escena 4: [0.60 -> 0.80]
+          if (p >= 0.58 && p < 0.82) {
+            const ratio = Math.max(0, Math.min(1, (p - 0.60) / 0.20));
+            requestVideoScrub(3, ratio);
+          }
+          // Escena 5: [0.80 -> 1.00]
+          if (p >= 0.78) {
+            const ratio = Math.max(0, Math.min(1, (p - 0.80) / 0.20));
+            requestVideoScrub(4, ratio);
           }
         }
       }
     });
 
+    // =========================================================================
+    // NARRATIVA Y TRANSICIONES CINEMATOGRÁFICAS PRECISAS
+    // =========================================================================
+
+    // --- ESCENA 01 (0.00 a 0.20): The Industrial Awakening ---
     heroTimeline
-      // ==========================================
-      // FASE 1: ESCENA 1 (Scrub con scroll)
-      // ==========================================
-      .to(v1, { opacity: 0.9, duration: 0.06 * durScale }, 0)
-      .to({ intensity: 0 }, {
-        intensity: 1.0, duration: 0.15 * durScale,
-        onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
-      }, 0)
-      .to(arcLight, { opacity: 0.95, scale: 1.3, duration: 0.15 * durScale }, 0)
-      .to(welderBg, { opacity: 0.35, duration: 0.18 * durScale }, 0.02)
-      .to(slide1, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.04)
-      .to(slide1, { opacity: 0, y: -35, duration: 0.06 * durScale }, 0.18)
-      .to(v1, { opacity: 0, duration: 0.06 * durScale }, 0.20)
+      .to(scenePanels[0], { scale: 1.06, duration: 0.18, ease: 'none' }, 0)
+      .to(slides[0], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.15)
+      
+      // Transición 01 -> 02: LIGHT BEAM REVEAL
+      .to(lightBeam, { opacity: 1, x: '40%', duration: 0.04, ease: 'power2.inOut' }, 0.17)
+      .to(scenePanels[0], { opacity: 0, duration: 0.05, onComplete: () => { scenePanels[0].style.visibility = 'hidden'; } }, 0.19)
+      .set(scenePanels[1], { visibility: 'visible' }, 0.19)
+      .to(scenePanels[1], { opacity: 1, scale: 1.02, duration: 0.05 }, 0.19)
+      .to(lightBeam, { opacity: 0, x: '100%', duration: 0.03 }, 0.21)
 
-      // ==========================================
-      // FASE 2: ESCENA 2 (Autoplay continuo)
-      // ==========================================
-      .to(v2, { opacity: 0.92, duration: 0.06 * durScale }, 0.22)
-      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, duration: 0.18 * durScale }, 0.22)
-      .to(arcLight, { opacity: 0.45, scale: 1.0, duration: 0.18 * durScale }, 0.22)
-      .to({ intensity: 1.0 }, {
-        intensity: 0.4, duration: 0.18 * durScale,
-        onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
-      }, 0.22)
-      .to(slide2, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.24)
-      .to(slide2, { opacity: 0, y: -35, duration: 0.06 * durScale }, 0.42)
-      .to(v2, { opacity: 0, duration: 0.06 * durScale }, 0.44)
+      // --- ESCENA 02 (0.20 a 0.40): The Power of ESAB ---
+      .to(slides[1], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.21)
+      .to(scenePanels[1], { scale: 1.08, duration: 0.16, ease: 'none' }, 0.21)
+      .to(slides[1], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.35)
 
-      // ==========================================
-      // FASE 3: ESCENA 3 (Scrub con scroll) + HUD
-      // ==========================================
-      .to(v3, { opacity: 0.9, duration: 0.06 * durScale }, 0.45)
-      .to(machine, { scale: 1.3, x: isMobileDevice ? '-2%' : '-8%', y: '4%', duration: 0.20 * durScale }, 0.46)
-      .to(hotspots, { opacity: 1, duration: 0.10 * durScale }, 0.48)
-      .to(slide3, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.48)
-      .to(hotspots, { opacity: 0, duration: 0.06 * durScale }, 0.65)
-      .to(slide3, { opacity: 0, y: -35, duration: 0.06 * durScale }, 0.67)
-      .to(v3, { opacity: 0, duration: 0.06 * durScale }, 0.68)
+      // Transición 02 -> 03: ELECTRIC FLASH
+      .to(electricFlash, { opacity: 0.95, duration: 0.03, ease: 'power3.in' }, 0.37)
+      .to(scenePanels[1], { opacity: 0, duration: 0.04, onComplete: () => { scenePanels[1].style.visibility = 'hidden'; } }, 0.38)
+      .set(scenePanels[2], { visibility: 'visible' }, 0.38)
+      .to(scenePanels[2], { opacity: 1, scale: 1.03, duration: 0.04 }, 0.38)
+      .to(electricFlash, { opacity: 0, duration: 0.04, ease: 'power2.out' }, 0.40)
 
-      // ==========================================
-      // FASE 4: ESCENA 4 (Panorama equipos ESAB)
-      // ==========================================
-      .to(s4, { opacity: 0.85, duration: 0.08 * durScale }, 0.69)
-      .to(machine, { scale: 1.0, x: '0%', y: '0%', opacity: 0.9, duration: 0.15 * durScale }, 0.70)
-      .to(s4, { opacity: 0, duration: 0.06 * durScale }, 0.84)
+      // --- ESCENA 03 (0.40 a 0.60): Engineered to Perform ---
+      .to(slides[2], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.41)
+      .to(scenePanels[2], { scale: 1.10, duration: 0.16, ease: 'none' }, 0.41)
+      .to(slides[2], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.55)
 
-      // ==========================================
-      // FASE 5: ESCENA 5 (Logo & MAQSYMA Oficial)
-      // ==========================================
-      .to(s5, { opacity: 0.85, duration: 0.08 * durScale }, 0.85)
-      .to(welderBg, { opacity: 0.15, duration: 0.14 * durScale }, 0.85)
-      .to({ intensity: 0.4 }, {
-        intensity: 0.0, duration: 0.14 * durScale,
-        onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
-      }, 0.85)
-      .to(slide4, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.86);
+      // Transición 03 -> 04: PARTICLE & CROSSFADE TRANSFORMATION
+      .to(scenePanels[2], { opacity: 0, scale: 1.14, duration: 0.05, onComplete: () => { scenePanels[2].style.visibility = 'hidden'; } }, 0.57)
+      .set(scenePanels[3], { visibility: 'visible' }, 0.57)
+      .to(scenePanels[3], { opacity: 1, scale: 1.02, duration: 0.05 }, 0.58)
+
+      // --- ESCENA 04 (0.60 a 0.80): Industrial Solutions ---
+      .to(slides[3], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.61)
+      .to(scenePanels[3], { scale: 1.07, duration: 0.16, ease: 'none' }, 0.61)
+      .to(slides[3], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.75)
+
+      // Transición 04 -> 05: MATCH CUT
+      .to(scenePanels[3], { opacity: 0, duration: 0.05, onComplete: () => { scenePanels[3].style.visibility = 'hidden'; } }, 0.77)
+      .set(scenePanels[4], { visibility: 'visible' }, 0.77)
+      .to(scenePanels[4], { opacity: 1, scale: 1.01, duration: 0.05 }, 0.78)
+
+      // --- ESCENA 05 (0.80 a 1.00): Built for Industry & Brand Reveal ---
+      .to(slides[4], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.81)
+      .to(scenePanels[4], { scale: 1.06, duration: 0.14, ease: 'none' }, 0.81)
+      // Transición 05 -> CATÁLOGO: Fade to black suave y apertura al catálogo
+      .to(fadeBlack, { opacity: 0.65, duration: 0.06 }, 0.94);
   }
 
   // 4. Products & Inventory Engine
