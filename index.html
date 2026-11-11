@@ -83,6 +83,31 @@
         <!-- Volumetric Arc Flare -->
         <div class="volumetric-arc-light" aria-hidden="true"></div>
 
+        <!-- Cinematic Video Engine Stage (5 Scenes Sequence) -->
+        <div class="hero-cinematic-stage" id="heroCinematicStage" aria-hidden="true">
+          <!-- Escena 1: Scrub con Scroll -->
+          <video class="cinematic-video" id="cineVideo1" muted playsinline preload="auto">
+            <source src="assets/cinematic/escena1.mp4" type="video/mp4">
+          </video>
+          <!-- Escena 2: Video continuo con pausa al final -->
+          <video class="cinematic-video" id="cineVideo2" muted playsinline preload="auto">
+            <source src="assets/cinematic/escena2.mp4" type="video/mp4">
+          </video>
+          <!-- Escena 3: Scrub con Scroll -->
+          <video class="cinematic-video" id="cineVideo3" muted playsinline preload="auto">
+            <source src="assets/cinematic/escena3.mp4" type="video/mp4">
+          </video>
+          <!-- Escena 4: Preparada para panorama de equipos ESAB -->
+          <div class="cinematic-layer" id="cineScene4">
+            <img src="assets/cinematic/equipos.png" alt="Panorama Equipos ESAB" class="cinematic-fallback-img">
+          </div>
+          <!-- Escena 5: Preparada para logo MAQSYMA -->
+          <div class="cinematic-layer" id="cineScene5">
+            <img src="assets/cinematic/maqsyma.jpg" alt="MAQSYMA Industrial" class="cinematic-fallback-img">
+          </div>
+          <div class="cinematic-vignette"></div>
+        </div>
+
         <!-- Real Welder Action Silhouette (Extracted from Original Reference Poster) with Responsive <picture> -->
         <div class="hero-welder-backdrop" aria-hidden="true">
           <picture>

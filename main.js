@@ -285,6 +285,49 @@
 
   if (!prefersReducedMotion && deviceTier !== 'bajo') loopSparks();
 
+  // =========================================================================
+  // 3. Cinematic Video Engine (5 Escenas: Scrub 1 y 3, Autoplay continuo 2)
+  // =========================================================================
+  const v1 = document.getElementById('cineVideo1');
+  const v2 = document.getElementById('cineVideo2');
+  const v3 = document.getElementById('cineVideo3');
+  const s4 = document.getElementById('cineScene4');
+  const s5 = document.getElementById('cineScene5');
+
+  // Asegurar metadata y carga inicial para control de currentTime
+  [v1, v2, v3].forEach((v) => {
+    if (!v) return;
+    v.muted = true;
+    v.playsInline = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.load();
+  });
+
+  // Escena 2: Autoplay con parada automática en el último fotograma
+  let scene2HasPlayed = false;
+  if (v2) {
+    v2.addEventListener('ended', () => {
+      v2.pause();
+    });
+    // Guardia de seguridad para pausar en el último fotograma exacto
+    v2.addEventListener('timeupdate', () => {
+      if (v2.duration && v2.currentTime >= v2.duration - 0.08) {
+        v2.pause();
+      }
+    });
+  }
+
+  function syncVideoScrub(video, progressNorm) {
+    if (!video || !video.duration || isNaN(video.duration)) return;
+    const clampedProgress = Math.max(0, Math.min(1, progressNorm));
+    const targetTime = clampedProgress * (video.duration - 0.04);
+    // Control suave para evitar tartamudeo en decodificación
+    if (Math.abs(video.currentTime - targetTime) > 0.03) {
+      video.currentTime = targetTime;
+    }
+  }
+
   // 3. Hero 500vh GSAP Scroll Sequence
   let heroTimeline = null;
   function initHeroScrollSequence() {
@@ -314,6 +357,13 @@
     gsap.set(welderBg, { opacity: 0 });
     gsap.set(hotspots, { opacity: 0 });
 
+    // Estado inicial capas cinemáticas
+    if (v1) gsap.set(v1, { opacity: 0 });
+    if (v2) gsap.set(v2, { opacity: 0 });
+    if (v3) gsap.set(v3, { opacity: 0 });
+    if (s4) gsap.set(s4, { opacity: 0 });
+    if (s5) gsap.set(s5, { opacity: 0 });
+
     const isMobileOrTierBajo = isMobileDevice || deviceTier !== 'alto';
     const scrubVal = isMobileOrTierBajo ? 0.35 : 0.8;
     const durScale = isMobileOrTierBajo ? 0.75 : 1.0; // 0.6-0.8s en transiciones móviles
@@ -328,48 +378,106 @@
           const p = self.progress;
           if (telemetryFill) telemetryFill.style.width = `${(p * 100).toFixed(1)}%`;
           if (telemetryStep) {
-            if (p < 0.25) telemetryStep.textContent = '01 / IGNICIÓN ARCO';
-            else if (p < 0.55) telemetryStep.textContent = '02 / INVERSORA ESAB';
-            else if (p < 0.82) telemetryStep.textContent = '03 / MICRO-CONTROL PFC';
-            else telemetryStep.textContent = '04 / MAQSYMA EXPERT';
+            if (p < 0.22) telemetryStep.textContent = '01 / ESCENA 1: IGNICIÓN ARCO';
+            else if (p < 0.45) telemetryStep.textContent = '02 / ESCENA 2: FUSIÓN CONTINUA';
+            else if (p < 0.68) telemetryStep.textContent = '03 / ESCENA 3: MICRO-CONTROL';
+            else if (p < 0.86) telemetryStep.textContent = '04 / ESCENA 4: GAMA ESAB';
+            else telemetryStep.textContent = '05 / ESCENA 5: MAQSYMA OFICIAL';
+          }
+
+          // === GESTIÓN DE VIDEOS SEGÚN PROGRESO DE SCROLL ===
+          // Escena 1: Scrub interactivo de 0.00 a 0.22
+          if (p <= 0.24) {
+            const v1Prog = Math.min(1, Math.max(0, p / 0.22));
+            syncVideoScrub(v1, v1Prog);
+          }
+
+          // Escena 2: Reproducción continua única (se detiene al final) de 0.22 a 0.45
+          if (v2) {
+            if (p >= 0.20 && p <= 0.48) {
+              if (v2.paused && !scene2HasPlayed) {
+                const playPromise = v2.play();
+                if (playPromise !== undefined) {
+                  playPromise.catch(() => {});
+                }
+              }
+            } else if (p < 0.15) {
+              // Si el usuario rebobina completamente hacia arriba, reiniciamos la escena 2 para que vuelva a correr
+              scene2HasPlayed = false;
+              v2.pause();
+              v2.currentTime = 0;
+            } else if (p > 0.52) {
+              // Fuera de rango hacia adelante
+              v2.pause();
+            }
+          }
+
+          // Escena 3: Scrub interactivo de 0.45 a 0.70
+          if (p >= 0.42 && p <= 0.74) {
+            const v3Prog = Math.min(1, Math.max(0, (p - 0.45) / 0.23));
+            syncVideoScrub(v3, v3Prog);
           }
         }
       }
     });
 
     heroTimeline
-      // Phase 1: Ignition
+      // ==========================================
+      // FASE 1: ESCENA 1 (Scrub con scroll)
+      // ==========================================
+      .to(v1, { opacity: 0.9, duration: 0.06 * durScale }, 0)
       .to({ intensity: 0 }, {
         intensity: 1.0, duration: 0.15 * durScale,
         onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0)
       .to(arcLight, { opacity: 0.95, scale: 1.3, duration: 0.15 * durScale }, 0)
-      .to(welderBg, { opacity: 0.55, duration: 0.18 * durScale }, 0.02)
+      .to(welderBg, { opacity: 0.35, duration: 0.18 * durScale }, 0.02)
       .to(slide1, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.04)
-      .to(slide1, { opacity: 0, y: -35, duration: 0.08 * durScale }, 0.20)
-      // Phase 2: Machine reveal
-      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, duration: 0.22 * durScale }, 0.22)
+      .to(slide1, { opacity: 0, y: -35, duration: 0.06 * durScale }, 0.18)
+      .to(v1, { opacity: 0, duration: 0.06 * durScale }, 0.20)
+
+      // ==========================================
+      // FASE 2: ESCENA 2 (Autoplay continuo)
+      // ==========================================
+      .to(v2, { opacity: 0.92, duration: 0.06 * durScale }, 0.22)
+      .to(machine, { opacity: 1, scale: 1.0, rotationY: 0, duration: 0.18 * durScale }, 0.22)
       .to(arcLight, { opacity: 0.45, scale: 1.0, duration: 0.18 * durScale }, 0.22)
       .to({ intensity: 1.0 }, {
-        intensity: 0.35, duration: 0.18 * durScale,
+        intensity: 0.4, duration: 0.18 * durScale,
         onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
       }, 0.22)
-      .to(slide2, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.26)
-      .to(slide2, { opacity: 0, y: -35, duration: 0.08 * durScale }, 0.48)
-      // Phase 3: Zoom and details
-      .to(machine, { scale: 1.35, x: isMobileDevice ? '-2%' : '-8%', y: '5%', duration: 0.22 * durScale }, 0.50)
-      .to(hotspots, { opacity: 1, duration: 0.10 * durScale }, 0.52)
-      .to(slide3, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.53)
-      .to(hotspots, { opacity: 0, duration: 0.08 * durScale }, 0.72)
-      .to(slide3, { opacity: 0, y: -35, duration: 0.08 * durScale }, 0.74)
-      // Phase 4: MAQSYMA Authority
-      .to(machine, { scale: 0.95, x: '0%', y: '0%', opacity: 0.85, duration: 0.18 * durScale }, 0.76)
-      .to(welderBg, { opacity: 0.15, duration: 0.16 * durScale }, 0.76)
-      .to({ intensity: 0.35 }, {
-        intensity: 0.0, duration: 0.18 * durScale,
+      .to(slide2, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.24)
+      .to(slide2, { opacity: 0, y: -35, duration: 0.06 * durScale }, 0.42)
+      .to(v2, { opacity: 0, duration: 0.06 * durScale }, 0.44)
+
+      // ==========================================
+      // FASE 3: ESCENA 3 (Scrub con scroll) + HUD
+      // ==========================================
+      .to(v3, { opacity: 0.9, duration: 0.06 * durScale }, 0.45)
+      .to(machine, { scale: 1.3, x: isMobileDevice ? '-2%' : '-8%', y: '4%', duration: 0.20 * durScale }, 0.46)
+      .to(hotspots, { opacity: 1, duration: 0.10 * durScale }, 0.48)
+      .to(slide3, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.48)
+      .to(hotspots, { opacity: 0, duration: 0.06 * durScale }, 0.65)
+      .to(slide3, { opacity: 0, y: -35, duration: 0.06 * durScale }, 0.67)
+      .to(v3, { opacity: 0, duration: 0.06 * durScale }, 0.68)
+
+      // ==========================================
+      // FASE 4: ESCENA 4 (Panorama equipos ESAB)
+      // ==========================================
+      .to(s4, { opacity: 0.85, duration: 0.08 * durScale }, 0.69)
+      .to(machine, { scale: 1.0, x: '0%', y: '0%', opacity: 0.9, duration: 0.15 * durScale }, 0.70)
+      .to(s4, { opacity: 0, duration: 0.06 * durScale }, 0.84)
+
+      // ==========================================
+      // FASE 5: ESCENA 5 (Logo & MAQSYMA Oficial)
+      // ==========================================
+      .to(s5, { opacity: 0.85, duration: 0.08 * durScale }, 0.85)
+      .to(welderBg, { opacity: 0.15, duration: 0.14 * durScale }, 0.85)
+      .to({ intensity: 0.4 }, {
+        intensity: 0.0, duration: 0.14 * durScale,
         onUpdate: function () { sparksIntensity = this.targets()[0].intensity; }
-      }, 0.76)
-      .to(slide4, { opacity: 1, y: 0, duration: 0.14 * durScale }, 0.80);
+      }, 0.85)
+      .to(slide4, { opacity: 1, y: 0, duration: 0.12 * durScale }, 0.86);
   }
 
   // 4. Products & Inventory Engine
