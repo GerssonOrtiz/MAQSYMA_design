@@ -182,24 +182,31 @@
     v.addEventListener('canplay', () => {
       videoLoadedState[idx] = true;
       if (posters[idx]) {
-        // Transición suave del poster hacia el video
         posters[idx].style.opacity = '0';
       }
     }, { once: true });
 
+    // Si el video entra en waiting/seeking largo, reasegurar que el poster o el fotograma eviten pantalla negra
+    v.addEventListener('seeking', () => {
+      if (posters[idx] && posters[idx].style.opacity !== '0') {
+        posters[idx].style.opacity = '0.5';
+      }
+    });
+
     v.addEventListener('error', () => {
-      console.warn(`[Cinematic] Fallback activado para video escena ${idx + 1}`);
+      console.warn(`[Cinematic] Fallback poster permanente para video escena ${idx + 1}`);
       if (posters[idx]) {
         posters[idx].style.opacity = '1';
+        posters[idx].style.visibility = 'visible';
       }
     });
   }
 
-  // Cargar video 1 inmediatamente
+  // Cargar videos 1 y 2 inmediatamente para fluidez instantánea y reversibilidad
   setupVideo(0);
-  if (videos[0]) {
-    videos[0].load();
-  }
+  setupVideo(1);
+  if (videos[0]) videos[0].load();
+  if (videos[1]) videos[1].load();
 
   // Pre-cargar video bajo demanda cuando el usuario se acerca a su escena
   function preloadNextVideo(idx) {
@@ -327,6 +334,12 @@
         start: 'top top',
         end: 'bottom bottom',
         scrub: scrubIntensity,
+        snap: {
+          snapTo: [0.0, 0.28, 0.48, 0.68, 1.0],
+          duration: { min: 0.2, max: 0.5 },
+          delay: 0.15,
+          ease: 'power1.inOut'
+        },
         onUpdate: (self) => {
           const p = self.progress;
 
@@ -335,7 +348,7 @@
             hudProgressFill.style.width = `${(p * 100).toFixed(1)}%`;
           }
 
-          // Detección de escena actual
+          // Detección de escena actual y precarga bidireccional
           let currentScene = Math.min(4, Math.floor(p / 0.20));
           if (p >= 0.96) currentScene = 4;
 
@@ -343,55 +356,60 @@
             hudActiveLabel.textContent = sceneLabels[currentScene];
           }
 
-          // Precarga anticipada del siguiente video (1 escena antes)
-          if (currentScene < 4) {
-            preloadNextVideo(currentScene + 1);
-          }
+          // Actualizar Minimapa de Dots Laterales
+          const navDots = document.querySelectorAll('.nav-dot');
+          navDots.forEach((dot, idx) => {
+            dot.classList.toggle('active', idx === currentScene);
+          });
 
-          // Sincronización Scrub Frame-by-Frame para cada video según su rango
-          // Escena 1: [0.00 -> 0.20] (scrub progresivo)
+          // Precarga bidireccional anticipada (adelante y atrás)
+          if (currentScene < 4) preloadNextVideo(currentScene + 1);
+          if (currentScene > 0) preloadNextVideo(currentScene - 1);
+
+          // Sincronización Scrub Frame-by-Frame con pausas (plateau) prolongadas
+          // Escena 1: [0.00 -> 0.20] (scrub progresivo inicial)
           if (p < 0.22) {
-            const ratio = Math.max(0, Math.min(1, p / 0.20));
+            const ratio = Math.max(0, Math.min(1, p / 0.18));
             requestVideoScrub(0, ratio);
           }
-          // Escena 2: [0.20 -> 0.40] (Video avanza hasta fotograma clave 0.26 y se detiene durante la estación comercial)
-          if (p >= 0.18 && p < 0.42) {
+          // Escena 2: [0.20 -> 0.40] (Pausa extendida de 0.24 a 0.36)
+          if (p >= 0.17 && p < 0.43) {
             let ratio = 0;
-            if (p < 0.26) {
-              ratio = (p - 0.20) / 0.06 * 0.70; // avance hasta fotograma óptimo
-            } else if (p >= 0.26 && p <= 0.35) {
-              ratio = 0.70; // Dwell / Pausa visual cinematográfica mientras interactúa
+            if (p < 0.24) {
+              ratio = (p - 0.20) / 0.04 * 0.70;
+            } else if (p >= 0.24 && p <= 0.36) {
+              ratio = 0.70; // Pausa fotograma estético extendida
             } else {
-              ratio = 0.70 + ((p - 0.35) / 0.05 * 0.30); // Cierre de la toma
+              ratio = 0.70 + ((p - 0.36) / 0.04 * 0.30);
             }
             requestVideoScrub(1, Math.max(0, Math.min(1, ratio)));
           }
-          // Escena 3: [0.40 -> 0.60] (Dwell en estación de nuevos modelos)
-          if (p >= 0.38 && p < 0.62) {
+          // Escena 3: [0.40 -> 0.60] (Pausa extendida de 0.44 a 0.56)
+          if (p >= 0.37 && p < 0.63) {
             let ratio = 0;
-            if (p < 0.46) {
-              ratio = (p - 0.40) / 0.06 * 0.65;
-            } else if (p >= 0.46 && p <= 0.55) {
-              ratio = 0.65; // Pausa fotograma estético
+            if (p < 0.44) {
+              ratio = (p - 0.40) / 0.04 * 0.65;
+            } else if (p >= 0.44 && p <= 0.56) {
+              ratio = 0.65; // Pausa fotograma estético extendida
             } else {
-              ratio = 0.65 + ((p - 0.55) / 0.05 * 0.35);
+              ratio = 0.65 + ((p - 0.56) / 0.04 * 0.35);
             }
             requestVideoScrub(2, Math.max(0, Math.min(1, ratio)));
           }
-          // Escena 4: [0.60 -> 0.80] (Dwell en estación top rated)
-          if (p >= 0.58 && p < 0.82) {
+          // Escena 4: [0.60 -> 0.80] (Pausa extendida de 0.64 a 0.76)
+          if (p >= 0.57 && p < 0.83) {
             let ratio = 0;
-            if (p < 0.66) {
-              ratio = (p - 0.60) / 0.06 * 0.68;
-            } else if (p >= 0.66 && p <= 0.75) {
-              ratio = 0.68; // Pausa fotograma estético
+            if (p < 0.64) {
+              ratio = (p - 0.60) / 0.04 * 0.68;
+            } else if (p >= 0.64 && p <= 0.76) {
+              ratio = 0.68; // Pausa fotograma estético extendida
             } else {
-              ratio = 0.68 + ((p - 0.75) / 0.05 * 0.32);
+              ratio = 0.68 + ((p - 0.76) / 0.04 * 0.32);
             }
             requestVideoScrub(3, Math.max(0, Math.min(1, ratio)));
           }
-          // Escena 5: [0.80 -> 1.00] (Avance cinematográfico final)
-          if (p >= 0.78) {
+          // Escena 5: [0.80 -> 1.00] (Avance cinematográfico final hacia el catálogo)
+          if (p >= 0.77) {
             const ratio = Math.max(0, Math.min(1, (p - 0.80) / 0.20));
             requestVideoScrub(4, ratio);
           }
@@ -403,113 +421,102 @@
     // NARRATIVA, ESTACIONES COMERCIALES Y TRANSICIONES CINEMATOGRÁFICAS
     // =========================================================================
 
-    // --- ESCENA 01 (0.00 a 0.20): The Industrial Awakening ---
+    // --- ESCENA 01 (0.00 a 0.20): The Industrial Awakening & MAQSYMA Reveal ---
     heroTimeline
       .to(scenePanels[0], { scale: 1.05, duration: 0.17, ease: 'none' }, 0)
       .to(slides[0], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in', onComplete: () => { slides[0].classList.remove('active-events'); } }, 0.14)
       
-      // Transición 01 -> 02: LIGHT BEAM REVEAL
-      .to(lightBeam, { opacity: 1, x: '40%', duration: 0.04, ease: 'power2.inOut' }, 0.16)
-      .to(scenePanels[0], { opacity: 0, duration: 0.04, onComplete: () => { scenePanels[0].style.visibility = 'hidden'; } }, 0.18)
-      .set(scenePanels[1], { visibility: 'visible' }, 0.18)
+      // Transición 01 -> 02: LIGHT BEAM REVEAL (Auto-reversa segura)
+      .to(lightBeam, { opacity: 1, x: '40%', duration: 0.035, ease: 'power2.inOut' }, 0.16)
+      .to(scenePanels[0], { opacity: 0, duration: 0.04 }, 0.18)
       .to(scenePanels[1], { opacity: 1, scale: 1.02, duration: 0.04 }, 0.18)
       .to(lightBeam, { opacity: 0, x: '100%', duration: 0.03 }, 0.20)
 
       // --- ESCENA 02 (0.20 a 0.40): ESTACIÓN COMERCIAL «LOS MÁS VENDIDOS» ---
-      // Entrada suave de la estación comercial con tarjetas
-      .set(slides[1], { visibility: 'visible' }, 0.21)
       .to(slides[1], { 
         opacity: 1, 
         y: 0, 
-        duration: 0.05, 
+        duration: 0.04, 
         ease: 'power2.out',
-        onStart: () => { slides[1].classList.add('active-events'); }
+        onStart: () => { slides[1].classList.add('active-events'); },
+        onReverseComplete: () => { slides[1].classList.remove('active-events'); }
       }, 0.21)
-      .to(scenePanels[1], { scale: 1.06, duration: 0.14, ease: 'none' }, 0.21)
-      // Plateau / Dwell interactivo (0.25 a 0.35)
-      // Salida al continuar el scroll
+      .to(scenePanels[1], { scale: 1.06, duration: 0.15, ease: 'none' }, 0.21)
+      // Pausa extendida durante [0.24 a 0.36]
+      // Salida hacia la transición 03
       .to(slides[1], { 
         opacity: 0, 
         y: -30, 
-        duration: 0.04, 
+        duration: 0.035, 
         ease: 'power2.in',
-        onComplete: () => { 
-          slides[1].classList.remove('active-events');
-          slides[1].style.visibility = 'hidden';
-        }
-      }, 0.35)
+        onComplete: () => { slides[1].classList.remove('active-events'); },
+        onReverseComplete: () => { slides[1].classList.add('active-events'); }
+      }, 0.36)
 
       // Transición 02 -> 03: ELECTRIC FLASH
       .to(electricFlash, { opacity: 0.95, duration: 0.03, ease: 'power3.in' }, 0.37)
-      .to(scenePanels[1], { opacity: 0, duration: 0.04, onComplete: () => { scenePanels[1].style.visibility = 'hidden'; } }, 0.38)
-      .set(scenePanels[2], { visibility: 'visible' }, 0.38)
+      .to(scenePanels[1], { opacity: 0, duration: 0.04 }, 0.38)
       .to(scenePanels[2], { opacity: 1, scale: 1.03, duration: 0.04 }, 0.38)
       .to(electricFlash, { opacity: 0, duration: 0.04, ease: 'power2.out' }, 0.40)
 
       // --- ESCENA 03 (0.40 a 0.60): ESTACIÓN COMERCIAL «NUEVOS MODELOS» ---
-      .set(slides[2], { visibility: 'visible' }, 0.41)
       .to(slides[2], { 
         opacity: 1, 
         y: 0, 
-        duration: 0.05, 
+        duration: 0.04, 
         ease: 'power2.out',
-        onStart: () => { slides[2].classList.add('active-events'); }
+        onStart: () => { slides[2].classList.add('active-events'); },
+        onReverseComplete: () => { slides[2].classList.remove('active-events'); }
       }, 0.41)
-      .to(scenePanels[2], { scale: 1.08, duration: 0.14, ease: 'none' }, 0.41)
-      // Plateau / Dwell interactivo (0.45 a 0.55)
+      .to(scenePanels[2], { scale: 1.08, duration: 0.15, ease: 'none' }, 0.41)
+      // Pausa extendida durante [0.44 a 0.56]
       // Salida
       .to(slides[2], { 
         opacity: 0, 
         y: -30, 
-        duration: 0.04, 
+        duration: 0.035, 
         ease: 'power2.in',
-        onComplete: () => { 
-          slides[2].classList.remove('active-events');
-          slides[2].style.visibility = 'hidden';
-        }
-      }, 0.55)
+        onComplete: () => { slides[2].classList.remove('active-events'); },
+        onReverseComplete: () => { slides[2].classList.add('active-events'); }
+      }, 0.56)
 
       // Transición 03 -> 04: PARTICLE CROSSFADE
-      .to(scenePanels[2], { opacity: 0, scale: 1.12, duration: 0.05, onComplete: () => { scenePanels[2].style.visibility = 'hidden'; } }, 0.57)
-      .set(scenePanels[3], { visibility: 'visible' }, 0.57)
-      .to(scenePanels[3], { opacity: 1, scale: 1.02, duration: 0.05 }, 0.58)
+      .to(scenePanels[2], { opacity: 0, scale: 1.12, duration: 0.04 }, 0.57)
+      .to(scenePanels[3], { opacity: 1, scale: 1.02, duration: 0.04 }, 0.58)
 
       // --- ESCENA 04 (0.60 a 0.80): ESTACIÓN COMERCIAL «LOS EQUIPOS MÁS VALORADOS» ---
-      .set(slides[3], { visibility: 'visible' }, 0.61)
       .to(slides[3], { 
         opacity: 1, 
         y: 0, 
-        duration: 0.05, 
+        duration: 0.04, 
         ease: 'power2.out',
-        onStart: () => { slides[3].classList.add('active-events'); }
+        onStart: () => { slides[3].classList.add('active-events'); },
+        onReverseComplete: () => { slides[3].classList.remove('active-events'); }
       }, 0.61)
-      .to(scenePanels[3], { scale: 1.06, duration: 0.14, ease: 'none' }, 0.61)
-      // Plateau / Dwell interactivo (0.65 a 0.75)
+      .to(scenePanels[3], { scale: 1.06, duration: 0.15, ease: 'none' }, 0.61)
+      // Pausa extendida durante [0.64 a 0.76]
       // Salida
       .to(slides[3], { 
         opacity: 0, 
         y: -30, 
-        duration: 0.04, 
+        duration: 0.035, 
         ease: 'power2.in',
-        onComplete: () => { 
-          slides[3].classList.remove('active-events');
-          slides[3].style.visibility = 'hidden';
-        }
-      }, 0.75)
+        onComplete: () => { slides[3].classList.remove('active-events'); },
+        onReverseComplete: () => { slides[3].classList.add('active-events'); }
+      }, 0.76)
 
       // Transición 04 -> 05: MATCH CUT
-      .to(scenePanels[3], { opacity: 0, duration: 0.05, onComplete: () => { scenePanels[3].style.visibility = 'hidden'; } }, 0.77)
-      .set(scenePanels[4], { visibility: 'visible' }, 0.77)
-      .to(scenePanels[4], { opacity: 1, scale: 1.01, duration: 0.05 }, 0.78)
+      .to(scenePanels[3], { opacity: 0, duration: 0.04 }, 0.77)
+      .to(scenePanels[4], { opacity: 1, scale: 1.01, duration: 0.04 }, 0.78)
 
       // --- ESCENA 05 (0.80 a 1.00): Built for Industry & Cierre Showroom ---
-      .set(slides[4], { visibility: 'visible' }, 0.81)
       .to(slides[4], { 
         opacity: 1, 
         y: 0, 
         duration: 0.05, 
         ease: 'power2.out',
-        onStart: () => { slides[4].classList.add('active-events'); }
+        onStart: () => { slides[4].classList.add('active-events'); },
+        onReverseComplete: () => { slides[4].classList.remove('active-events'); }
       }, 0.81)
       .to(scenePanels[4], { scale: 1.05, duration: 0.14, ease: 'none' }, 0.81)
       .to(fadeBlack, { opacity: 0.7, duration: 0.06 }, 0.94);
@@ -564,16 +571,33 @@
     const newArrivals = newArrivalIds.map(id => products.find(p => p.id === id)).filter(Boolean);
     const topRated = topRatedIds.map(id => products.find(p => p.id === id)).filter(Boolean);
 
+    // Tooltips técnicos enriquecidos para tarjetas comerciales
+    const productTooltips = {
+      'rebel-emp-215ic': 'Tecnología sMIG exclusiva: aprendizaje y adaptación continua del arco de soldadura.',
+      'rogue-es-245i': 'Módulo PFC avanzado: estabilidad óptima incluso con extensiones de cable de hasta 100 metros.',
+      'rogue-em-210': 'Alimentador industrial de 2 rodillos con regulación digital milimétrica de inductancia.',
+      'rustler-em-215': 'Última generación Inverter con pantalla digital intuitiva y chasis ultra compacto.',
+      'rustler-em-300': 'Potencia pesada compacta con sinergia inteligente para producción industrial ágil.',
+      'rogue-et-201ip-pro': 'Arco TIG HF de alta frecuencia con modo pulsado de precisión hasta 500 Hz.',
+      'warrior-500': 'Ciclo de trabajo al 100% en condiciones extremas de fabricación pesada y minería.',
+      'rogue-es-305i': 'Potencia de 300A para electrodos celulósicos pesados con excelente penetración.'
+    };
+
     function createStationCardHTML(p, commercialTag, metricLabel) {
       const inStock = p.stock > 0;
       const stockBadge = inStock
         ? `<span class="station-card-stock"><svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg> ${p.stock} disp.</span>`
         : `<span class="station-card-stock" style="color: #ef4444;">Bajo pedido</span>`;
 
+      const advantageTip = productTooltips[p.id] || p.subtitle;
+
       return `
         <article class="station-product-card" data-id="${p.id}">
           <div class="station-card-top">
-            <span class="station-card-tag">${commercialTag}</span>
+            <span class="station-card-tag has-tech-tip" title="${advantageTip}">
+              ${commercialTag}
+              <span class="tech-tip-popup">${advantageTip}</span>
+            </span>
             ${stockBadge}
           </div>
           <div class="station-card-image-wrap" onclick="window.MAQSYMA.openSpecModal('${p.id}')">

@@ -127,14 +127,17 @@
         <!-- Overlays Narrativos Cinemáticos y Estaciones Comerciales Interactivas -->
         <div class="hero-narrative-overlay">
 
-          <!-- Escena 01: The Industrial Awakening -->
+          <!-- Escena 01: The Industrial Awakening & MAQSYMA Reveal -->
           <article class="narrative-slide active-events" id="slide-01">
-            <span class="slide-badge">01 // AWAKENING</span>
-            <h1 class="narrative-title">THE INDUSTRIAL <span class="highlight-yellow">AWAKENING</span></h1>
-            <p class="narrative-desc">EL PODER DE LA INDUSTRIA.</p>
+            <div class="brand-reveal-badge" style="margin-bottom: 16px;">
+              <img src="assets/cinematic/logo-maqsyma.svg" alt="MAQSYMA Logo" class="brand-reveal-logo" width="280" height="68" onerror="this.src='assets/branding/maqsyma-logo.png'">
+            </div>
+            <span class="slide-badge">01 // AWAKENING &bull; SHOWROOM INDUSTRIAL</span>
+            <h1 class="narrative-title">MAQSYMA <span class="highlight-yellow">SHOWROOM</span></h1>
+            <p class="narrative-desc">TECNOLOGÍA SUECA ESAB EN SOLDADURA INDUSTRIAL. DISTRIBUIDOR OFICIAL AUTORIZADO.</p>
             <div class="hero-cta-group">
-              <a href="#catalogo" class="btn-primary-esab">Descubrir Showroom</a>
-              <a href="#estacion-bestsellers" class="btn-secondary-metal" onclick="window.MAQSYMA.scrollToStation(2); return false;">Iniciar Recorrido</a>
+              <a href="#estacion-bestsellers" class="btn-primary-esab" onclick="window.MAQSYMA.scrollToStation(2); return false;">Iniciar Recorrido Virtual</a>
+              <a href="#catalogo" class="btn-secondary-metal">Ir Directo al Catálogo</a>
             </div>
           </article>
 
@@ -233,6 +236,31 @@
             <span class="hud-active-label" id="hudActiveLabel">01 // THE INDUSTRIAL AWAKENING</span>
           </div>
         </div>
+
+        <!-- Minimapa Flotante Lateral Discreto (Dots Interactivos) -->
+        <nav class="cinematic-dots-nav" aria-label="Navegación rápida de estaciones">
+          <button class="nav-dot active" data-scene="1" onclick="window.MAQSYMA.scrollToStation(1); return false;" aria-label="Ir a 01 Awakening">
+            <span class="dot-tooltip">01 Awakening</span>
+          </button>
+          <button class="nav-dot" data-scene="2" onclick="window.MAQSYMA.scrollToStation(2); return false;" aria-label="Ir a 02 Más Vendidos">
+            <span class="dot-tooltip">02 Más Vendidos</span>
+          </button>
+          <button class="nav-dot" data-scene="3" onclick="window.MAQSYMA.scrollToStation(3); return false;" aria-label="Ir a 03 Nuevos Modelos">
+            <span class="dot-tooltip">03 Nuevos Modelos</span>
+          </button>
+          <button class="nav-dot" data-scene="4" onclick="window.MAQSYMA.scrollToStation(4); return false;" aria-label="Ir a 04 Más Valorados">
+            <span class="dot-tooltip">04 Más Valorados</span>
+          </button>
+          <button class="nav-dot" data-scene="5" onclick="window.MAQSYMA.scrollToStation(5); return false;" aria-label="Ir a 05 Catálogo">
+            <span class="dot-tooltip">05 Showroom Catálogo</span>
+          </button>
+        </nav>
+
+        <!-- Botón Flotante Permanente "Saltar al Catálogo" en Móviles -->
+        <a href="#catalogo" class="btn-skip-to-catalog" aria-label="Saltar directo a la tienda">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span>Tienda</span>
+        </a>
 
       </div>
     </section>
