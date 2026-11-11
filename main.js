@@ -305,11 +305,11 @@
 
     // Configuración inicial de todas las capas
     scenePanels.forEach((panel) => {
-      if (panel) gsap.set(panel, { opacity: 0, visibility: 'hidden', scale: 1.0 });
+      if (panel) gsap.set(panel, { opacity: 0, visibility: 'visible', scale: 1.0 });
     });
     slides.forEach((slide) => {
       if (slide) {
-        gsap.set(slide, { opacity: 0, y: 35 });
+        gsap.set(slide, { opacity: 0, y: 35, visibility: 'visible' });
         slide.classList.remove('active-events');
       }
     });
@@ -317,12 +317,8 @@
     if (electricFlash) gsap.set(electricFlash, { opacity: 0 });
     if (fadeBlack) gsap.set(fadeBlack, { opacity: 0 });
 
-    // Panel 1 visible al inicio
+    // Panel 1 visible al inicio (video limpio)
     if (scenePanels[0]) gsap.set(scenePanels[0], { opacity: 1, visibility: 'visible' });
-    if (slides[0]) {
-      gsap.set(slides[0], { opacity: 1, y: 0 });
-      slides[0].classList.add('active-events');
-    }
 
     const isMobileTier = isMobileDevice || deviceTier === 'bajo';
     const scrubIntensity = isMobileTier ? 0.35 : 0.65;
@@ -334,12 +330,6 @@
         start: 'top top',
         end: 'bottom bottom',
         scrub: scrubIntensity,
-        snap: {
-          snapTo: [0.0, 0.28, 0.48, 0.68, 1.0],
-          duration: { min: 0.2, max: 0.5 },
-          delay: 0.15,
-          ease: 'power1.inOut'
-        },
         onUpdate: (self) => {
           const p = self.progress;
 
@@ -421,10 +411,9 @@
     // NARRATIVA, ESTACIONES COMERCIALES Y TRANSICIONES CINEMATOGRÁFICAS
     // =========================================================================
 
-    // --- ESCENA 01 (0.00 a 0.20): The Industrial Awakening & MAQSYMA Reveal ---
+    // --- ESCENA 01 (0.00 a 0.20): The Industrial Awakening (Video Limpio al Abrir) ---
     heroTimeline
       .to(scenePanels[0], { scale: 1.05, duration: 0.17, ease: 'none' }, 0)
-      .to(slides[0], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in', onComplete: () => { slides[0].classList.remove('active-events'); } }, 0.14)
       
       // Transición 01 -> 02: LIGHT BEAM REVEAL (Auto-reversa segura)
       .to(lightBeam, { opacity: 1, x: '40%', duration: 0.035, ease: 'power2.inOut' }, 0.16)
