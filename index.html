@@ -75,6 +75,31 @@
     <section class="hero-scroll-container" id="experiencia" aria-label="Experiencia Cinematográfica Industrial MAQSYMA">
       <div class="hero-viewport">
 
+        <!-- ================================================================
+             INTRO OVERLAY CINEMATOGRÁFICO (aparece al cargar, desaparece
+             con crossfade hacia el video de fondo)
+             ================================================================ -->
+        <div id="cinematicIntroOverlay" class="cinematic-intro-overlay" aria-hidden="true">
+          <div class="intro-content">
+            <!-- Logo principal -->
+            <div class="intro-logo-wrap">
+              <img src="assets/branding/maqsyma-logo.png" alt="MAQSYMA" class="intro-logo" width="220" height="44"
+                onerror="this.src='assets/cinematic/logo-maqsyma.svg'">
+            </div>
+            <!-- Línea separadora animada -->
+            <div class="intro-divider" aria-hidden="true"></div>
+            <!-- Tagline técnico -->
+            <p class="intro-tagline">SOLUCIONES EN SOLDADURA <span class="intro-dot">·</span> ESAB PARTNER</p>
+            <!-- Scan lines decorativas -->
+            <div class="intro-scan-lines" aria-hidden="true"></div>
+          </div>
+          <!-- Esquinas de visor industrial -->
+          <div class="intro-corner intro-corner--tl" aria-hidden="true"></div>
+          <div class="intro-corner intro-corner--tr" aria-hidden="true"></div>
+          <div class="intro-corner intro-corner--bl" aria-hidden="true"></div>
+          <div class="intro-corner intro-corner--br" aria-hidden="true"></div>
+        </div>
+
         <!-- Stage de Video Cinematográfico (5 Escenas continuas con posters WebP) -->
         <div class="hero-cinematic-stage" id="heroCinematicStage" aria-hidden="true">
           <!-- Escena 01: The Industrial Awakening -->

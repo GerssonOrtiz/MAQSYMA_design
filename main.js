@@ -1332,8 +1332,38 @@
     scrollToStation
   };
 
+  // =========================================================================
+  // 10b. Intro Cinematográfico de Entrada — Secuencia Logo → Crossfade Video
+  // =========================================================================
+  function runCinematicIntro() {
+    // Respetar prefers-reduced-motion: el overlay tiene display:none en ese caso vía CSS
+    if (prefersReducedMotion) return;
+
+    const overlay = document.getElementById('cinematicIntroOverlay');
+    if (!overlay) return;
+
+    // El overlay ya es visible (opacity:1) desde HTML.
+    // Esperamos a que las animaciones CSS del logo/tagline terminen (~1.65s),
+    // luego un dwell breve (~0.6s) y finalmente crossfade hacia el video.
+    const ANIM_CSS_DURATION  = 1650; // ms que tardan los keyframes CSS
+    const DWELL_DURATION     = 700;  // ms de pausa con logo visible
+    const CROSSFADE_DURATION = 900;  // ms del fade-out del overlay
+
+    setTimeout(() => {
+      // Fase crossfade: el overlay hace fade out mientras el video ya estaba corriendo abajo
+      overlay.classList.add('intro-done');
+
+      // Después del fade, retiramos completamente el overlay del layout
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, CROSSFADE_DURATION + 100);
+
+    }, ANIM_CSS_DURATION + DWELL_DURATION);
+  }
+
   // 11. Initialization on DOMContentLoaded
   document.addEventListener('DOMContentLoaded', () => {
+    runCinematicIntro();
     initHeroScrollSequence();
     loadProducts();
     loadCart();
