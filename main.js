@@ -154,7 +154,6 @@
     document.getElementById('slide-05')
   ];
 
-  const hudPills = document.querySelectorAll('.hud-step-pill');
   const hudProgressFill = document.getElementById('hudProgressFill');
   const hudActiveLabel = document.getElementById('hudActiveLabel');
   const lightBeam = document.getElementById('cinematicLightBeam');
@@ -163,10 +162,10 @@
 
   const sceneLabels = [
     '01 // THE INDUSTRIAL AWAKENING',
-    '02 // THE POWER OF ESAB',
-    '03 // ENGINEERED TO PERFORM',
-    '04 // INDUSTRIAL SOLUTIONS',
-    '05 // BUILT FOR INDUSTRY'
+    '02 // ESTACIÓN: LOS MÁS VENDIDOS',
+    '03 // ESTACIÓN: NUEVOS MODELOS',
+    '04 // ESTACIÓN: LOS MÁS VALORADOS',
+    '05 // SHOWROOM MAQSYMA // CATÁLOGO'
   ];
 
   // Configuración de buffering, fast seeking y lazy-loading progresivo
@@ -261,27 +260,23 @@
     v.addEventListener('seeked', onSeeked, { once: true });
   }
 
-  // Interacción en los pills del HUD para navegar entre escenas con suavidad
-  hudPills.forEach((pill) => {
-    pill.addEventListener('click', () => {
-      const targetScene = parseInt(pill.getAttribute('data-target-scene'), 10);
-      const heroContainer = document.querySelector('.hero-scroll-container');
-      if (!heroContainer) return;
-      const startY = heroContainer.offsetTop;
-      const totalH = heroContainer.offsetHeight - window.innerHeight;
-      const targetRatio = (targetScene - 1) / 4;
-      window.scrollTo({
-        top: startY + (totalH * targetRatio),
-        behavior: 'smooth'
-      });
+  // Función para navegar suavemente a una escena/estación
+  function scrollToStation(sceneNumber) {
+    const heroContainer = document.querySelector('.hero-scroll-container');
+    if (!heroContainer) return;
+    const startY = heroContainer.offsetTop;
+    const totalH = heroContainer.offsetHeight - window.innerHeight;
+    const targetRatio = (sceneNumber - 1) / 4;
+    window.scrollTo({
+      top: startY + (totalH * targetRatio),
+      behavior: 'smooth'
     });
-  });
+  }
 
-  // 3. Orquestador Maestro GSAP ScrollTrigger para los 5 videos (25s totales)
+  // 3. Orquestador Maestro GSAP ScrollTrigger para los 5 videos con estaciones interactivas (Plateau dwell)
   let heroTimeline = null;
   function initHeroScrollSequence() {
     if (prefersReducedMotion) {
-      // Modo movimiento reducido: mostrar escena 1 y permitir navegación convencional
       if (scenePanels[0]) {
         scenePanels[0].style.opacity = '1';
         scenePanels[0].style.visibility = 'visible';
@@ -289,6 +284,7 @@
       if (slides[0]) {
         slides[0].style.opacity = '1';
         slides[0].style.transform = 'none';
+        slides[0].classList.add('active-events');
       }
       return;
     }
@@ -305,7 +301,10 @@
       if (panel) gsap.set(panel, { opacity: 0, visibility: 'hidden', scale: 1.0 });
     });
     slides.forEach((slide) => {
-      if (slide) gsap.set(slide, { opacity: 0, y: 35 });
+      if (slide) {
+        gsap.set(slide, { opacity: 0, y: 35 });
+        slide.classList.remove('active-events');
+      }
     });
     if (lightBeam) gsap.set(lightBeam, { opacity: 0, x: '-60%' });
     if (electricFlash) gsap.set(electricFlash, { opacity: 0 });
@@ -313,7 +312,10 @@
 
     // Panel 1 visible al inicio
     if (scenePanels[0]) gsap.set(scenePanels[0], { opacity: 1, visibility: 'visible' });
-    if (slides[0]) gsap.set(slides[0], { opacity: 1, y: 0 });
+    if (slides[0]) {
+      gsap.set(slides[0], { opacity: 1, y: 0 });
+      slides[0].classList.add('active-events');
+    }
 
     const isMobileTier = isMobileDevice || deviceTier === 'bajo';
     const scrubIntensity = isMobileTier ? 0.35 : 0.65;
@@ -333,13 +335,10 @@
             hudProgressFill.style.width = `${(p * 100).toFixed(1)}%`;
           }
 
-          // Detección de escena actual (5 escenas: ~0.20 cada una)
+          // Detección de escena actual
           let currentScene = Math.min(4, Math.floor(p / 0.20));
           if (p >= 0.96) currentScene = 4;
 
-          hudPills.forEach((pill, idx) => {
-            pill.classList.toggle('active', idx === currentScene);
-          });
           if (hudActiveLabel && sceneLabels[currentScene]) {
             hudActiveLabel.textContent = sceneLabels[currentScene];
           }
@@ -350,27 +349,48 @@
           }
 
           // Sincronización Scrub Frame-by-Frame para cada video según su rango
-          // Escena 1: [0.00 -> 0.20]
+          // Escena 1: [0.00 -> 0.20] (scrub progresivo)
           if (p < 0.22) {
             const ratio = Math.max(0, Math.min(1, p / 0.20));
             requestVideoScrub(0, ratio);
           }
-          // Escena 2: [0.20 -> 0.40]
+          // Escena 2: [0.20 -> 0.40] (Video avanza hasta fotograma clave 0.26 y se detiene durante la estación comercial)
           if (p >= 0.18 && p < 0.42) {
-            const ratio = Math.max(0, Math.min(1, (p - 0.20) / 0.20));
-            requestVideoScrub(1, ratio);
+            let ratio = 0;
+            if (p < 0.26) {
+              ratio = (p - 0.20) / 0.06 * 0.70; // avance hasta fotograma óptimo
+            } else if (p >= 0.26 && p <= 0.35) {
+              ratio = 0.70; // Dwell / Pausa visual cinematográfica mientras interactúa
+            } else {
+              ratio = 0.70 + ((p - 0.35) / 0.05 * 0.30); // Cierre de la toma
+            }
+            requestVideoScrub(1, Math.max(0, Math.min(1, ratio)));
           }
-          // Escena 3: [0.40 -> 0.60]
+          // Escena 3: [0.40 -> 0.60] (Dwell en estación de nuevos modelos)
           if (p >= 0.38 && p < 0.62) {
-            const ratio = Math.max(0, Math.min(1, (p - 0.40) / 0.20));
-            requestVideoScrub(2, ratio);
+            let ratio = 0;
+            if (p < 0.46) {
+              ratio = (p - 0.40) / 0.06 * 0.65;
+            } else if (p >= 0.46 && p <= 0.55) {
+              ratio = 0.65; // Pausa fotograma estético
+            } else {
+              ratio = 0.65 + ((p - 0.55) / 0.05 * 0.35);
+            }
+            requestVideoScrub(2, Math.max(0, Math.min(1, ratio)));
           }
-          // Escena 4: [0.60 -> 0.80]
+          // Escena 4: [0.60 -> 0.80] (Dwell en estación top rated)
           if (p >= 0.58 && p < 0.82) {
-            const ratio = Math.max(0, Math.min(1, (p - 0.60) / 0.20));
-            requestVideoScrub(3, ratio);
+            let ratio = 0;
+            if (p < 0.66) {
+              ratio = (p - 0.60) / 0.06 * 0.68;
+            } else if (p >= 0.66 && p <= 0.75) {
+              ratio = 0.68; // Pausa fotograma estético
+            } else {
+              ratio = 0.68 + ((p - 0.75) / 0.05 * 0.32);
+            }
+            requestVideoScrub(3, Math.max(0, Math.min(1, ratio)));
           }
-          // Escena 5: [0.80 -> 1.00]
+          // Escena 5: [0.80 -> 1.00] (Avance cinematográfico final)
           if (p >= 0.78) {
             const ratio = Math.max(0, Math.min(1, (p - 0.80) / 0.20));
             requestVideoScrub(4, ratio);
@@ -380,25 +400,44 @@
     });
 
     // =========================================================================
-    // NARRATIVA Y TRANSICIONES CINEMATOGRÁFICAS PRECISAS
+    // NARRATIVA, ESTACIONES COMERCIALES Y TRANSICIONES CINEMATOGRÁFICAS
     // =========================================================================
 
     // --- ESCENA 01 (0.00 a 0.20): The Industrial Awakening ---
     heroTimeline
-      .to(scenePanels[0], { scale: 1.06, duration: 0.18, ease: 'none' }, 0)
-      .to(slides[0], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.15)
+      .to(scenePanels[0], { scale: 1.05, duration: 0.17, ease: 'none' }, 0)
+      .to(slides[0], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in', onComplete: () => { slides[0].classList.remove('active-events'); } }, 0.14)
       
       // Transición 01 -> 02: LIGHT BEAM REVEAL
-      .to(lightBeam, { opacity: 1, x: '40%', duration: 0.04, ease: 'power2.inOut' }, 0.17)
-      .to(scenePanels[0], { opacity: 0, duration: 0.05, onComplete: () => { scenePanels[0].style.visibility = 'hidden'; } }, 0.19)
-      .set(scenePanels[1], { visibility: 'visible' }, 0.19)
-      .to(scenePanels[1], { opacity: 1, scale: 1.02, duration: 0.05 }, 0.19)
-      .to(lightBeam, { opacity: 0, x: '100%', duration: 0.03 }, 0.21)
+      .to(lightBeam, { opacity: 1, x: '40%', duration: 0.04, ease: 'power2.inOut' }, 0.16)
+      .to(scenePanels[0], { opacity: 0, duration: 0.04, onComplete: () => { scenePanels[0].style.visibility = 'hidden'; } }, 0.18)
+      .set(scenePanels[1], { visibility: 'visible' }, 0.18)
+      .to(scenePanels[1], { opacity: 1, scale: 1.02, duration: 0.04 }, 0.18)
+      .to(lightBeam, { opacity: 0, x: '100%', duration: 0.03 }, 0.20)
 
-      // --- ESCENA 02 (0.20 a 0.40): The Power of ESAB ---
-      .to(slides[1], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.21)
-      .to(scenePanels[1], { scale: 1.08, duration: 0.16, ease: 'none' }, 0.21)
-      .to(slides[1], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.35)
+      // --- ESCENA 02 (0.20 a 0.40): ESTACIÓN COMERCIAL «LOS MÁS VENDIDOS» ---
+      // Entrada suave de la estación comercial con tarjetas
+      .set(slides[1], { visibility: 'visible' }, 0.21)
+      .to(slides[1], { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.05, 
+        ease: 'power2.out',
+        onStart: () => { slides[1].classList.add('active-events'); }
+      }, 0.21)
+      .to(scenePanels[1], { scale: 1.06, duration: 0.14, ease: 'none' }, 0.21)
+      // Plateau / Dwell interactivo (0.25 a 0.35)
+      // Salida al continuar el scroll
+      .to(slides[1], { 
+        opacity: 0, 
+        y: -30, 
+        duration: 0.04, 
+        ease: 'power2.in',
+        onComplete: () => { 
+          slides[1].classList.remove('active-events');
+          slides[1].style.visibility = 'hidden';
+        }
+      }, 0.35)
 
       // Transición 02 -> 03: ELECTRIC FLASH
       .to(electricFlash, { opacity: 0.95, duration: 0.03, ease: 'power3.in' }, 0.37)
@@ -407,31 +446,73 @@
       .to(scenePanels[2], { opacity: 1, scale: 1.03, duration: 0.04 }, 0.38)
       .to(electricFlash, { opacity: 0, duration: 0.04, ease: 'power2.out' }, 0.40)
 
-      // --- ESCENA 03 (0.40 a 0.60): Engineered to Perform ---
-      .to(slides[2], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.41)
-      .to(scenePanels[2], { scale: 1.10, duration: 0.16, ease: 'none' }, 0.41)
-      .to(slides[2], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.55)
+      // --- ESCENA 03 (0.40 a 0.60): ESTACIÓN COMERCIAL «NUEVOS MODELOS» ---
+      .set(slides[2], { visibility: 'visible' }, 0.41)
+      .to(slides[2], { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.05, 
+        ease: 'power2.out',
+        onStart: () => { slides[2].classList.add('active-events'); }
+      }, 0.41)
+      .to(scenePanels[2], { scale: 1.08, duration: 0.14, ease: 'none' }, 0.41)
+      // Plateau / Dwell interactivo (0.45 a 0.55)
+      // Salida
+      .to(slides[2], { 
+        opacity: 0, 
+        y: -30, 
+        duration: 0.04, 
+        ease: 'power2.in',
+        onComplete: () => { 
+          slides[2].classList.remove('active-events');
+          slides[2].style.visibility = 'hidden';
+        }
+      }, 0.55)
 
-      // Transición 03 -> 04: PARTICLE & CROSSFADE TRANSFORMATION
-      .to(scenePanels[2], { opacity: 0, scale: 1.14, duration: 0.05, onComplete: () => { scenePanels[2].style.visibility = 'hidden'; } }, 0.57)
+      // Transición 03 -> 04: PARTICLE CROSSFADE
+      .to(scenePanels[2], { opacity: 0, scale: 1.12, duration: 0.05, onComplete: () => { scenePanels[2].style.visibility = 'hidden'; } }, 0.57)
       .set(scenePanels[3], { visibility: 'visible' }, 0.57)
       .to(scenePanels[3], { opacity: 1, scale: 1.02, duration: 0.05 }, 0.58)
 
-      // --- ESCENA 04 (0.60 a 0.80): Industrial Solutions ---
-      .to(slides[3], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.61)
-      .to(scenePanels[3], { scale: 1.07, duration: 0.16, ease: 'none' }, 0.61)
-      .to(slides[3], { opacity: 0, y: -25, duration: 0.04, ease: 'power2.in' }, 0.75)
+      // --- ESCENA 04 (0.60 a 0.80): ESTACIÓN COMERCIAL «LOS EQUIPOS MÁS VALORADOS» ---
+      .set(slides[3], { visibility: 'visible' }, 0.61)
+      .to(slides[3], { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.05, 
+        ease: 'power2.out',
+        onStart: () => { slides[3].classList.add('active-events'); }
+      }, 0.61)
+      .to(scenePanels[3], { scale: 1.06, duration: 0.14, ease: 'none' }, 0.61)
+      // Plateau / Dwell interactivo (0.65 a 0.75)
+      // Salida
+      .to(slides[3], { 
+        opacity: 0, 
+        y: -30, 
+        duration: 0.04, 
+        ease: 'power2.in',
+        onComplete: () => { 
+          slides[3].classList.remove('active-events');
+          slides[3].style.visibility = 'hidden';
+        }
+      }, 0.75)
 
       // Transición 04 -> 05: MATCH CUT
       .to(scenePanels[3], { opacity: 0, duration: 0.05, onComplete: () => { scenePanels[3].style.visibility = 'hidden'; } }, 0.77)
       .set(scenePanels[4], { visibility: 'visible' }, 0.77)
       .to(scenePanels[4], { opacity: 1, scale: 1.01, duration: 0.05 }, 0.78)
 
-      // --- ESCENA 05 (0.80 a 1.00): Built for Industry & Brand Reveal ---
-      .to(slides[4], { opacity: 1, y: 0, duration: 0.04, ease: 'power2.out' }, 0.81)
-      .to(scenePanels[4], { scale: 1.06, duration: 0.14, ease: 'none' }, 0.81)
-      // Transición 05 -> CATÁLOGO: Fade to black suave y apertura al catálogo
-      .to(fadeBlack, { opacity: 0.65, duration: 0.06 }, 0.94);
+      // --- ESCENA 05 (0.80 a 1.00): Built for Industry & Cierre Showroom ---
+      .set(slides[4], { visibility: 'visible' }, 0.81)
+      .to(slides[4], { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.05, 
+        ease: 'power2.out',
+        onStart: () => { slides[4].classList.add('active-events'); }
+      }, 0.81)
+      .to(scenePanels[4], { scale: 1.05, duration: 0.14, ease: 'none' }, 0.81)
+      .to(fadeBlack, { opacity: 0.7, duration: 0.06 }, 0.94);
   }
 
   // 4. Products & Inventory Engine
@@ -453,6 +534,7 @@
       }
     }
     renderCatalog();
+    renderCommercialStations();
     populateQuoteSelect();
   }
 
@@ -468,6 +550,79 @@
       return `S/. ${pen.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
     }
     return `$ ${usd.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+  }
+
+  function renderCommercialStations() {
+    if (!products || products.length === 0) return;
+
+    // Clasificación de productos según Opción A
+    const bestSellerIds = ['rebel-emp-215ic', 'rogue-es-245i', 'rogue-em-210'];
+    const newArrivalIds = ['rustler-em-215', 'rustler-em-300', 'rogue-et-201ip-pro'];
+    const topRatedIds = ['warrior-500', 'rogue-es-305i'];
+
+    const bestSellers = bestSellerIds.map(id => products.find(p => p.id === id)).filter(Boolean);
+    const newArrivals = newArrivalIds.map(id => products.find(p => p.id === id)).filter(Boolean);
+    const topRated = topRatedIds.map(id => products.find(p => p.id === id)).filter(Boolean);
+
+    function createStationCardHTML(p, commercialTag, metricLabel) {
+      const inStock = p.stock > 0;
+      const stockBadge = inStock
+        ? `<span class="station-card-stock"><svg width="7" height="7" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="4"/></svg> ${p.stock} disp.</span>`
+        : `<span class="station-card-stock" style="color: #ef4444;">Bajo pedido</span>`;
+
+      return `
+        <article class="station-product-card" data-id="${p.id}">
+          <div class="station-card-top">
+            <span class="station-card-tag">${commercialTag}</span>
+            ${stockBadge}
+          </div>
+          <div class="station-card-image-wrap" onclick="window.MAQSYMA.openSpecModal('${p.id}')">
+            <img src="${p.image}" alt="${p.name}" loading="lazy">
+          </div>
+          <div class="station-card-brand-row">
+            <span class="station-card-brand">ESAB // ORIGINAL</span>
+            <span class="station-card-metric">${metricLabel}</span>
+          </div>
+          <h3 class="station-card-name" onclick="window.MAQSYMA.openSpecModal('${p.id}')" title="${p.name}">${p.name}</h3>
+          <p class="station-card-desc">${p.subtitle}</p>
+          <div class="station-card-price-row">
+            <span class="station-card-price">${formatPrice(p.priceUSD, p.pricePEN)}</span>
+            <span class="station-card-price-tax">${currentCurrency === 'PEN' ? 'IGV Inc.' : '+ IVA'}</span>
+          </div>
+          <div class="station-card-actions">
+            <button class="btn-station-view" onclick="window.MAQSYMA.openSpecModal('${p.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              Ver Equipo
+            </button>
+            <button class="btn-station-add" ${!inStock ? 'disabled' : ''} onclick="window.MAQSYMA.addToCart('${p.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line></svg>
+              ${inStock ? 'Añadir' : 'Sin Stock'}
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    const gridBestSellers = document.getElementById('station-grid-bestsellers');
+    if (gridBestSellers) {
+      gridBestSellers.innerHTML = bestSellers.map(p => 
+        createStationCardHTML(p, 'TOP VENTAS', p.specs?.ciclo || 'Alta Demanda')
+      ).join('');
+    }
+
+    const gridNewArrivals = document.getElementById('station-grid-newarrivals');
+    if (gridNewArrivals) {
+      gridNewArrivals.innerHTML = newArrivals.map(p => 
+        createStationCardHTML(p, 'NUEVO MODELO', p.categoryLabel || 'Nueva Generación')
+      ).join('');
+    }
+
+    const gridTopRated = document.getElementById('station-grid-toprated');
+    if (gridTopRated) {
+      gridTopRated.innerHTML = topRated.map(p => 
+        createStationCardHTML(p, 'MÁXIMO RENDIMIENTO', p.specs?.amperaje || 'Uso Continuo')
+      ).join('');
+    }
   }
 
   function renderCatalog() {
@@ -883,6 +1038,7 @@
       const p = products.find(prod => prod.id === id);
       if (p) p.stock = val;
       renderCatalog();
+      renderCommercialStations();
       showToast(`Stock actualizado en servidor: ${val}`);
     } catch (err) {
       console.error(err);
@@ -913,6 +1069,7 @@
       const p = products.find(prod => prod.id === id);
       if (p) p.priceUSD = val;
       renderCatalog();
+      renderCommercialStations();
       showToast(`Precio USD actualizado: $${val}`);
     } catch (err) {
       showToast('Error al actualizar precio en servidor');
@@ -942,6 +1099,7 @@
       const p = products.find(prod => prod.id === id);
       if (p) p.pricePEN = val;
       renderCatalog();
+      renderCommercialStations();
       showToast(`Precio PEN actualizado: S/.${val}`);
     } catch (err) {
       showToast('Error al actualizar precio en servidor');
@@ -971,6 +1129,7 @@
       products = products.filter(p => p.id !== id);
       renderAdminTable();
       renderCatalog();
+      renderCommercialStations();
       showToast('Equipo eliminado del catálogo');
     } catch (err) {
       showToast('Error al eliminar equipo en el servidor');
@@ -1037,6 +1196,7 @@
       products.unshift(created.product);
       renderAdminTable();
       renderCatalog();
+      renderCommercialStations();
       showToast(`¡Equipo ${name} publicado en servidor con éxito!`);
       document.getElementById('adminAddForm').reset();
     } catch (err) {
@@ -1062,6 +1222,7 @@
       btn.classList.toggle('active', btn.dataset.currency === cur);
     });
     renderCatalog();
+    renderCommercialStations();
     updateCartUI();
   }
 
@@ -1127,7 +1288,8 @@
     updateProductPricePEN,
     deleteProduct,
     addNewProductFromAdmin,
-    setCurrency
+    setCurrency,
+    scrollToStation
   };
 
   // 11. Initialization on DOMContentLoaded

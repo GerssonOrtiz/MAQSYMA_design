@@ -124,38 +124,84 @@
           <div class="cinematic-fade-black" id="cinematicFadeBlack" aria-hidden="true"></div>
         </div>
 
-        <!-- Overlays Narrativos Cinemáticos (Tipografía HTML/CSS sincronizada con Scroll) -->
+        <!-- Overlays Narrativos Cinemáticos y Estaciones Comerciales Interactivas -->
         <div class="hero-narrative-overlay">
 
-          <!-- Escena 1 -->
+          <!-- Escena 01: The Industrial Awakening -->
           <article class="narrative-slide active-events" id="slide-01">
             <span class="slide-badge">01 // AWAKENING</span>
             <h1 class="narrative-title">THE INDUSTRIAL <span class="highlight-yellow">AWAKENING</span></h1>
             <p class="narrative-desc">EL PODER DE LA INDUSTRIA.</p>
+            <div class="hero-cta-group">
+              <a href="#catalogo" class="btn-primary-esab">Descubrir Showroom</a>
+              <a href="#estacion-bestsellers" class="btn-secondary-metal" onclick="window.MAQSYMA.scrollToStation(2); return false;">Iniciar Recorrido</a>
+            </div>
           </article>
 
-          <!-- Escena 2 -->
-          <article class="narrative-slide" id="slide-02">
-            <span class="slide-badge">02 // INGENIERÍA</span>
-            <h2 class="narrative-title">THE POWER <span class="highlight-yellow">OF ESAB</span></h2>
-            <p class="narrative-desc">TECNOLOGÍA PARA CADA DESAFÍO.</p>
+          <!-- Escena 02: Estación Comercial «LOS MÁS VENDIDOS» (Best Sellers) -->
+          <article class="commercial-station-slide" id="slide-02" data-station="bestsellers" aria-label="Estación Comercial: Los Más Vendidos">
+            <header class="station-header">
+              <span class="station-badge">
+                <span class="pulse-dot"></span>
+                ESTACIÓN 02 // SHOWROOM INDUSTRIAL
+              </span>
+              <h2 class="station-title">LOS MÁS <span class="highlight-yellow">VENDIDOS</span></h2>
+              <p class="station-subtitle">Equipos de soldadura con mayor volumen y preferencia técnica en la industria metalmecánica.</p>
+            </header>
+            
+            <div class="station-cards-grid" id="station-grid-bestsellers">
+              <!-- Renderizado dinámico desde catálogo real -->
+            </div>
+
+            <div class="station-controls-bar">
+              <span class="station-nav-hint">Desplaza el scroll para continuar el recorrido</span>
+              <a href="#catalogo" class="station-cta-link">Ver catálogo completo &rarr;</a>
+            </div>
           </article>
 
-          <!-- Escena 3 -->
-          <article class="narrative-slide" id="slide-03">
-            <span class="slide-badge">03 // RENDIMIENTO</span>
-            <h2 class="narrative-title">ENGINEERED <span class="highlight-yellow">TO PERFORM</span></h2>
-            <p class="narrative-desc">PRECISIÓN EN CADA SOLDADURA.</p>
+          <!-- Escena 03: Estación Comercial «NUEVOS MODELOS» (New Arrivals) -->
+          <article class="commercial-station-slide" id="slide-03" data-station="newarrivals" aria-label="Estación Comercial: Nuevos Modelos">
+            <header class="station-header">
+              <span class="station-badge">
+                <span class="pulse-dot"></span>
+                ESTACIÓN 03 // ALTA TECNOLOGÍA
+              </span>
+              <h2 class="station-title">NUEVOS <span class="highlight-yellow">MODELOS</span></h2>
+              <p class="station-subtitle">Inversoras de última generación con modulación de arco dinámico y micro-control PFC.</p>
+            </header>
+            
+            <div class="station-cards-grid" id="station-grid-newarrivals">
+              <!-- Renderizado dinámico desde catálogo real -->
+            </div>
+
+            <div class="station-controls-bar">
+              <span class="station-nav-hint">Desplaza el scroll para continuar el recorrido</span>
+              <a href="#catalogo" class="station-cta-link">Ver catálogo completo &rarr;</a>
+            </div>
           </article>
 
-          <!-- Escena 4 -->
-          <article class="narrative-slide" id="slide-04">
-            <span class="slide-badge">04 // CATÁLOGO PROFESIONAL</span>
-            <h2 class="narrative-title">INDUSTRIAL <span class="highlight-yellow">SOLUTIONS</span></h2>
-            <p class="narrative-desc">SOLUCIONES PARA PROFESIONALES.</p>
+          <!-- Escena 04: Estación Comercial «LOS EQUIPOS MÁS VALORADOS» (Top Rated) -->
+          <article class="commercial-station-slide" id="slide-04" data-station="toprated" aria-label="Estación Comercial: Equipos Más Valorados">
+            <header class="station-header">
+              <span class="station-badge">
+                <span class="pulse-dot"></span>
+                ESTACIÓN 04 // MÁXIMA EXIGENCIA
+              </span>
+              <h2 class="station-title">LOS EQUIPOS <span class="highlight-yellow">MÁS VALORADOS</span></h2>
+              <p class="station-subtitle">Potencia de ciclo continuo al 100%, multiproceso pesado y rendimiento industrial certificado.</p>
+            </header>
+            
+            <div class="station-cards-grid" id="station-grid-toprated">
+              <!-- Renderizado dinámico desde catálogo real -->
+            </div>
+
+            <div class="station-controls-bar">
+              <span class="station-nav-hint">Desplaza el scroll para continuar el recorrido</span>
+              <a href="#catalogo" class="station-cta-link">Ver catálogo completo &rarr;</a>
+            </div>
           </article>
 
-          <!-- Escena 5 & Brand Reveal -->
+          <!-- Escena 05: Brand Reveal y Explore MAQSYMA -->
           <article class="narrative-slide" id="slide-05">
             <div class="brand-reveal-badge">
               <img src="assets/cinematic/logo-maqsyma.svg" alt="MAQSYMA Logo" class="brand-reveal-logo" width="260" height="64" onerror="this.src='assets/branding/maqsyma-logo.png'">
@@ -164,39 +210,17 @@
             <h2 class="narrative-title">BUILT FOR <span class="highlight-yellow">INDUSTRY</span></h2>
             <p class="narrative-desc">MAQSYMA. SOLUCIONES EN SOLDADURA.</p>
             <div class="hero-cta-group">
-              <a href="#catalogo" class="btn-primary-esab">Explorar Catálogo ESAB</a>
+              <a href="#catalogo" class="btn-primary-esab">Explorar Todo el Catálogo</a>
               <a href="#cotizaciones" class="btn-secondary-metal">Asesoría WhatsApp</a>
             </div>
           </article>
 
         </div>
 
-        <!-- Indicador de Progreso Cinemático Elegante (5 Escenas) -->
-        <nav class="cinematic-progress-hud" aria-label="Progreso Cinemático">
+        <!-- Indicador Minimalista de Progreso Cinemático (Línea de tiempo continua sin botones HUD) -->
+        <div class="cinematic-progress-hud" aria-label="Progreso Cinemático">
           <div class="hud-timeline-track">
             <div class="hud-progress-fill" id="hudProgressFill"></div>
-          </div>
-          <div class="hud-scenes-indicators">
-            <button class="hud-step-pill active" data-target-scene="1">
-              <span class="step-num">01</span>
-              <span class="step-name">AWAKENING</span>
-            </button>
-            <button class="hud-step-pill" data-target-scene="2">
-              <span class="step-num">02</span>
-              <span class="step-name">POWER OF ESAB</span>
-            </button>
-            <button class="hud-step-pill" data-target-scene="3">
-              <span class="step-num">03</span>
-              <span class="step-name">PERFORM</span>
-            </button>
-            <button class="hud-step-pill" data-target-scene="4">
-              <span class="step-num">04</span>
-              <span class="step-name">SOLUTIONS</span>
-            </button>
-            <button class="hud-step-pill" data-target-scene="5">
-              <span class="step-num">05</span>
-              <span class="step-name">BUILT FOR INDUSTRY</span>
-            </button>
           </div>
           <div class="hud-current-status">
             <span class="hud-scroll-hint">
@@ -204,11 +228,11 @@
                 <rect x="5" y="2" width="14" height="20" rx="7"></rect>
                 <line x1="12" y1="6" x2="12" y2="10"></line>
               </svg>
-              SCROLL NARRATIVE
+              SCROLL SHOWROOM
             </span>
             <span class="hud-active-label" id="hudActiveLabel">01 // THE INDUSTRIAL AWAKENING</span>
           </div>
-        </nav>
+        </div>
 
       </div>
     </section>
