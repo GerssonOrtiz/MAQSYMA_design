@@ -159,6 +159,7 @@
   const lightBeam = document.getElementById('cinematicLightBeam');
   const electricFlash = document.getElementById('cinematicElectricFlash');
   const fadeBlack = document.getElementById('cinematicFadeBlack');
+  const scrollInvitation = document.getElementById('sceneScrollInvitation');
 
   const sceneLabels = [
     '01 // THE INDUSTRIAL AWAKENING',
@@ -179,10 +180,35 @@
     v.setAttribute('muted', '');
     v.setAttribute('playsinline', '');
 
+    if (idx === 0) {
+      v.loop = true;
+      v.setAttribute('loop', '');
+      v.autoplay = true;
+      v.setAttribute('autoplay', '');
+    }
+
     v.addEventListener('canplay', () => {
       videoLoadedState[idx] = true;
       if (posters[idx]) {
         posters[idx].style.opacity = '0';
+      }
+      if (idx === 0) {
+        // Reproducir automáticamente en bucle continuo al cargar la página
+        const playPromise = v.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Autoplay bloqueado por políticas del navegador: reintentar al primer gesto
+            const onFirstTouch = () => {
+              v.play();
+              window.removeEventListener('click', onFirstTouch);
+              window.removeEventListener('touchstart', onFirstTouch);
+              window.removeEventListener('scroll', onFirstTouch);
+            };
+            window.addEventListener('click', onFirstTouch, { once: true });
+            window.addEventListener('touchstart', onFirstTouch, { once: true });
+            window.addEventListener('scroll', onFirstTouch, { once: true });
+          });
+        }
       }
     }, { once: true });
 
@@ -352,16 +378,17 @@
             dot.classList.toggle('active', idx === currentScene);
           });
 
+          // Ocultar suavemente el prompt de invitación a explorar cuando se inicia el scroll
+          if (scrollInvitation) {
+            scrollInvitation.classList.toggle('hidden', p > 0.04);
+          }
+
           // Precarga bidireccional anticipada (adelante y atrás)
           if (currentScene < 4) preloadNextVideo(currentScene + 1);
           if (currentScene > 0) preloadNextVideo(currentScene - 1);
 
-          // Sincronización Scrub Frame-by-Frame con pausas (plateau) prolongadas
-          // Escena 1: [0.00 -> 0.20] (scrub progresivo inicial)
-          if (p < 0.22) {
-            const ratio = Math.max(0, Math.min(1, p / 0.18));
-            requestVideoScrub(0, ratio);
-          }
+          // Sincronización Scrub Frame-by-Frame para los videos de las estaciones comerciales
+          // (Nota: El video 0 se reproduce automáticamente en vivo al abrir la página)
           // Escena 2: [0.20 -> 0.40] (Pausa extendida de 0.24 a 0.36)
           if (p >= 0.17 && p < 0.43) {
             let ratio = 0;

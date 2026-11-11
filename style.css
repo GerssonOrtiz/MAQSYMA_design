@@ -1007,6 +1007,70 @@ body {
   text-decoration: underline;
 }
 
+/* Prompt de Invitación de Scroll en Escena 1 */
+.scene-scroll-invitation {
+  position: absolute;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 14;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.scene-scroll-invitation.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(10px);
+}
+
+.invitation-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--color-yellow-esab);
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  animation: pulse-text-glow 2s infinite ease-in-out;
+}
+
+.invitation-mouse-icon {
+  width: 20px;
+  height: 32px;
+  border: 2px solid rgba(245, 196, 0, 0.7);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+  box-shadow: 0 0 12px rgba(245, 196, 0, 0.25);
+  background: rgba(16, 17, 18, 0.4);
+}
+
+.invitation-wheel {
+  width: 3px;
+  height: 6px;
+  background: var(--color-yellow-esab);
+  border-radius: 999px;
+  animation: mouse-wheel-bounce 1.6s infinite ease-in-out;
+}
+
+@keyframes mouse-wheel-bounce {
+  0% { transform: translateY(0); opacity: 1; }
+  60% { transform: translateY(8px); opacity: 0.2; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-text-glow {
+  0%, 100% { opacity: 0.9; text-shadow: 0 0 8px rgba(245, 196, 0, 0.4); }
+  50% { opacity: 0.5; text-shadow: none; }
+}
+
 /* Indicador Minimalista de Progreso HUD (Línea de tiempo continua sin botones) */
 .cinematic-progress-hud {
   position: absolute;
